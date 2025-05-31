@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Gym Tracker</title>
+  <link rel="manifest" href="manifest.json">
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 2rem;
+      background: #f4f4f4;
+    }
+    h1 {
+      text-align: center;
+    }
+    form {
+      background: white;
+      padding: 1.5rem;
+      border-radius: 10px;
+      max-width: 400px;
+      margin: auto;
+      box-shadow: 0 0 10px rgba(0,0,0,0.1);
+    }
+    label {
+      display: block;
+      margin: 0.5rem 0 0.2rem;
+    }
+    input, select, textarea, button {
+      width: 100%;
+      padding: 0.5rem;
+      margin-bottom: 1rem;
+      border-radius: 5px;
+      border: 1px solid #ccc;
+    }
+  </style>
+</head>
+<body>
+  <h1>🏋️ Gym Tracker</h1>
+  <form id="gymForm">
+    <label for="name">Name</label>
+    <input type="text" id="name" required />
+
+    <label for="phone">Phone Number</label>
+    <input type="tel" id="phone" required />
+
+    <label for="type">Log Type</label>
+    <select id="type">
+      <option value="attendance">Attendance</option>
+      <option value="calorie">Calorie Log</option>
+    </select>
+
+    <label for="calorie" id="calorieLabel" style="display:none;">Calorie Description</label>
+    <textarea id="calorie" placeholder="e.g., 2 bananas + 1 egg" style="display:none;"></textarea>
+
+    <button type="submit">Submit</button>
+  </form>
+
+  <script>
+    const form = document.getElementById('gymForm');
+    const typeField = document.getElementById('type');
+    const calorieField = document.getElementById('calorie');
+    const calorieLabel = document.getElementById('calorieLabel');
+
+    typeField.addEventListener('change', () => {
+      const isCalorie = typeField.value === 'calorie';
+      calorieField.style.display = isCalorie ? 'block' : 'none';
+      calorieLabel.style.display = isCalorie ? 'block' : 'none';
+    });
+
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+
+      const data = {
+        name: document.getElementById('name').value,
+        phone: document.getElementById('phone').value,
+        type: typeField.value,
+        calorie: calorieField.value
+      };
+
+      alert('Form Submitted!');
+
+      // TODO: Send this data to n8n webhook or Airtable
+    });
+  </script>
+  <script>
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker
+          .register('./sw.js')
+          .then((reg) => console.log('Service Worker registered ✅'))
+          .catch((err) => console.log('Service Worker registration failed ❌', err));
+      });
+    }
+  </script>
+</body>
+</html>
