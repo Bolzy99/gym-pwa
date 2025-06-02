@@ -18,13 +18,11 @@
       color: #fff;
     }
 
-    h1 {
+    h1, h2, h3 {
       text-align: center;
-      padding: 2rem 1rem 1rem;
-      font-size: 2rem;
     }
 
-    form {
+    form, .login-container, .admin-panel {
       background: rgba(255, 255, 255, 0.95);
       color: #333;
       padding: 2rem;
@@ -66,26 +64,88 @@
 <body>
   <h1>🏋️ Gym Tracker</h1>
 
-  <form id="gymForm">
-    <label for="name">Name</label>
-    <input type="text" id="name" required />
+  <!-- Login View -->
+  <div id="loginView" class="login-container">
+    <h2>Login</h2>
+    <input type="text" id="loginName" placeholder="Name" required />
+    <input type="tel" id="loginPhone" placeholder="Phone Number" required />
+    <button onclick="loginUser()">Login</button>
+  </div>
 
-    <label for="phone">Phone Number</label>
-    <input type="tel" id="phone" required />
+  <!-- Dashboard View -->
+  <div id="dashboardView" style="display:none;">
+    <form id="gymForm">
+      <label for="name">Name</label>
+      <input type="text" id="name" required />
 
-    <label for="type">Log Type</label>
-    <select id="type">
-      <option value="attendance">Attendance</option>
-      <option value="calorie">Calorie Log</option>
-    </select>
+      <label for="phone">Phone Number</label>
+      <input type="tel" id="phone" required />
 
-    <label for="calorie" id="calorieLabel" style="display:none;">Calorie Description</label>
-    <textarea id="calorie" placeholder="e.g., 2 bananas + 1 egg" style="display:none;"></textarea>
+      <label for="type">Log Type</label>
+      <select id="type">
+        <option value="attendance">Attendance</option>
+        <option value="calorie">Calorie Log</option>
+      </select>
 
-    <button type="submit">Submit</button>
-  </form>
+      <label for="calorie" id="calorieLabel" style="display:none;">Calorie Description</label>
+      <textarea id="calorie" placeholder="e.g., 2 bananas + 1 egg" style="display:none;"></textarea>
+
+      <button type="submit">Submit</button>
+    </form>
+
+    <!-- Admin Panel -->
+    <div id="adminPanel" class="admin-panel" style="display:none;">
+      <h3>Admin Panel</h3>
+      <ul>
+        <li><a href="https://example.com/onboarding-form" target="_blank">📋 Onboarding Form</a></li>
+        <li><button onclick="getBusiestHours()">📈 View Busiest Hours</button></li>
+        <li><button onclick="getAttendanceAnalytics()">📊 Attendance Analytics</button></li>
+      </ul>
+    </div>
+  </div>
 
   <script>
+    const ADMIN_USERS = [
+      { name: "Yash", phone: "9821098933" },
+    ];
+  
+    function loginUser() {
+      const name = document.getElementById("loginName").value.trim();
+      const phone = document.getElementById("loginPhone").value.trim();
+
+      if (!name || !phone) {
+        alert("Please enter both name and phone number.");
+        return;
+      }
+
+      const isAdmin = ADMIN_USERS.some(
+        (admin) =>
+          admin.name.toLowerCase() === name.toLowerCase() &&
+          admin.phone === phone
+      );
+
+      const user = { name, phone, role: isAdmin ? "admin" : "member" };
+      localStorage.setItem("gymUser", JSON.stringify(user));
+      showDashboard(user);
+    }
+
+    function showDashboard(user) {
+      document.getElementById("loginView").style.display = "none";
+      document.getElementById("dashboardView").style.display = "block";
+
+      document.getElementById("name").value = user.name;
+      document.getElementById("phone").value = user.phone;
+
+      if (user.role === "admin") {
+        document.getElementById("adminPanel").style.display = "block";
+      }
+    }
+
+    window.onload = () => {
+      const user = JSON.parse(localStorage.getItem("gymUser"));
+      if (user) showDashboard(user);
+    };
+
     const form = document.getElementById('gymForm');
     const typeField = document.getElementById('type');
     const calorieField = document.getElementById('calorie');
@@ -107,12 +167,48 @@
         calorie: calorieField.value
       };
 
-      alert('Form Submitted!');
+      try {
+        const response = await fetch('https://suitable-rapidly-terrier.ngrok-free.app/webhook-test/gym-log', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(data)
+        });
 
-      // TODO: Connect with n8n webhook or Airtable
+        const resData = await response.json();
+        if (resData.success) {
+          alert("Form submitted successfully!");
+        } else {
+          alert("Form submitted but got unexpected response.");
+        }
+      } catch (error) {
+        alert("Submission failed. Try again.");
+        console.error(error);
+      }
     });
 
-    // Service Worker for PWA
+    // Admin-only buttons
+    async function getBusiestHours() {
+      try {
+        const res = await fetch("https://suitable-rapidly-terrier.ngrok-free.app/webhook-test/admin-busiest-hours");
+        const data = await res.json();
+        alert("Busiest Hours:\n" + data.message);
+      } catch (err) {
+        alert("Failed to fetch busiest hours.");
+        console.error(err);
+      }
+    }
+
+    async function getAttendanceAnalytics() {
+      try {
+        const res = await fetch("https://suitable-rapidly-terrier.ngrok-free.app/webhook-test/admin-attendance-analytics");
+        const data = await res.json();
+        alert("Attendance Analytics:\n" + data.message);
+      } catch (err) {
+        alert("Failed to fetch attendance analytics.");
+        console.error(err);
+      }
+    }
+
     if ('serviceWorker' in navigator) {
       window.addEventListener('load', () => {
         navigator.serviceWorker
