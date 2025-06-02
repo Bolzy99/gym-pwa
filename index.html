@@ -1,42 +1,71 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Gym Tracker</title>
-  <link rel="manifest" href="manifest.json">
+  <link rel="manifest" href="manifest.json" />
+  <link rel="icon" href="icon.png" type="image/png" />
+  <link rel="apple-touch-icon" href="icon.png" />
+
   <style>
     body {
-      font-family: Arial, sans-serif;
-      margin: 2rem;
-      background: #f4f4f4;
+      margin: 0;
+      padding: 0;
+      font-family: 'Segoe UI', sans-serif;
+      background: url('background.jpg') no-repeat center center fixed;
+      background-size: cover;
+      color: #fff;
     }
+
     h1 {
       text-align: center;
+      padding: 2rem 1rem 1rem;
+      font-size: 2rem;
     }
+
     form {
-      background: white;
-      padding: 1.5rem;
-      border-radius: 10px;
+      background: rgba(255, 255, 255, 0.95);
+      color: #333;
+      padding: 2rem;
+      border-radius: 15px;
       max-width: 400px;
-      margin: auto;
-      box-shadow: 0 0 10px rgba(0,0,0,0.1);
+      margin: 2rem auto;
+      box-shadow: 0 8px 30px rgba(0,0,0,0.3);
     }
+
     label {
       display: block;
-      margin: 0.5rem 0 0.2rem;
+      margin-bottom: 0.3rem;
+      font-weight: bold;
     }
+
     input, select, textarea, button {
       width: 100%;
-      padding: 0.5rem;
+      padding: 0.7rem;
       margin-bottom: 1rem;
-      border-radius: 5px;
+      border-radius: 8px;
       border: 1px solid #ccc;
+      font-size: 1rem;
+    }
+
+    button {
+      background-color: #28a745;
+      color: white;
+      font-weight: bold;
+      border: none;
+      cursor: pointer;
+      transition: background 0.3s;
+    }
+
+    button:hover {
+      background-color: #218838;
     }
   </style>
 </head>
 <body>
   <h1>🏋️ Gym Tracker</h1>
+
   <form id="gymForm">
     <label for="name">Name</label>
     <input type="text" id="name" required />
@@ -80,16 +109,16 @@
 
       alert('Form Submitted!');
 
-      // TODO: Send this data to n8n webhook or Airtable
+      // TODO: Connect with n8n webhook or Airtable
     });
-  </script>
-  <script>
+
+    // Service Worker for PWA
     if ('serviceWorker' in navigator) {
       window.addEventListener('load', () => {
         navigator.serviceWorker
           .register('./sw.js')
-          .then((reg) => console.log('Service Worker registered ✅'))
-          .catch((err) => console.log('Service Worker registration failed ❌', err));
+          .then(reg => console.log('Service Worker registered ✅'))
+          .catch(err => console.log('Service Worker registration failed ❌', err));
       });
     }
   </script>
