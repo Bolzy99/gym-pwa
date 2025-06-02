@@ -5,8 +5,8 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Gym Tracker</title>
   <link rel="manifest" href="manifest.json" />
-  <link rel="icon" href="icon.png" type="image/png" />
-  <link rel="apple-touch-icon" href="icon.png" />
+  <link rel="icon" href="/icon.png" type="image/png" />
+  <link rel="apple-touch-icon" href="/icon.png" />
 
   <style>
     body {
@@ -69,7 +69,7 @@
     <h2>Login</h2>
     <input type="text" id="loginName" placeholder="Name" required />
     <input type="tel" id="loginPhone" placeholder="Phone Number" required />
-    <button onclick="loginUser()">Login</button>
+    <button id="loginButton">Login</button>
   </div>
 
   <!-- Dashboard View -->
@@ -98,8 +98,8 @@
       <h3>Admin Panel</h3>
       <ul>
         <li><a href="https://example.com/onboarding-form" target="_blank">📋 Onboarding Form</a></li>
-        <li><button onclick="getBusiestHours()">📈 View Busiest Hours</button></li>
-        <li><button onclick="getAttendanceAnalytics()">📊 Attendance Analytics</button></li>
+        <li><button id="busiestButton">📈 View Busiest Hours</button></li>
+        <li><button id="analyticsButton">📊 Attendance Analytics</button></li>
       </ul>
     </div>
   </div>
@@ -108,7 +108,18 @@
     const ADMIN_USERS = [
       { name: "Yash", phone: "9821098933" },
     ];
-  
+
+    function showDashboard(user) {
+      document.getElementById("loginView").style.display = "none";
+      document.getElementById("dashboardView").style.display = "block";
+      document.getElementById("name").value = user.name;
+      document.getElementById("phone").value = user.phone;
+
+      if (user.role === "admin") {
+        document.getElementById("adminPanel").style.display = "block";
+      }
+    }
+
     function loginUser() {
       const name = document.getElementById("loginName").value.trim();
       const phone = document.getElementById("loginPhone").value.trim();
@@ -119,9 +130,7 @@
       }
 
       const isAdmin = ADMIN_USERS.some(
-        (admin) =>
-          admin.name.toLowerCase() === name.toLowerCase() &&
-          admin.phone === phone
+        (admin) => admin.name.toLowerCase() === name.toLowerCase() && admin.phone === phone
       );
 
       const user = { name, phone, role: isAdmin ? "admin" : "member" };
@@ -129,21 +138,14 @@
       showDashboard(user);
     }
 
-    function showDashboard(user) {
-      document.getElementById("loginView").style.display = "none";
-      document.getElementById("dashboardView").style.display = "block";
-
-      document.getElementById("name").value = user.name;
-      document.getElementById("phone").value = user.phone;
-
-      if (user.role === "admin") {
-        document.getElementById("adminPanel").style.display = "block";
-      }
-    }
-
     window.onload = () => {
       const user = JSON.parse(localStorage.getItem("gymUser"));
       if (user) showDashboard(user);
+
+      // Event listeners
+      document.getElementById('loginButton').addEventListener('click', loginUser);
+      document.getElementById('busiestButton').addEventListener('click', getBusiestHours);
+      document.getElementById('analyticsButton').addEventListener('click', getAttendanceAnalytics);
     };
 
     const form = document.getElementById('gymForm');
@@ -159,7 +161,6 @@
 
     form.addEventListener('submit', async (e) => {
       e.preventDefault();
-
       const data = {
         name: document.getElementById('name').value,
         phone: document.getElementById('phone').value,
@@ -186,11 +187,9 @@
       }
     });
 
-    // Admin-only buttons
     async function getBusiestHours() {
       try {
         const res = await fetch("https://suitable-rapidly-terrier.ngrok-free.app/webhook-test/admin-busiest-hours");
-
         const contentType = res.headers.get("content-type");
 
         if (!res.ok) {
