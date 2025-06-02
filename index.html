@@ -190,11 +190,17 @@
     async function getBusiestHours() {
       try {
         const res = await fetch("https://suitable-rapidly-terrier.ngrok-free.app/webhook-test/admin-busiest-hours");
-        const data = await res.json();
+
+	if (!res.ok) {
+          const text = await res.text();
+	  throw new Error('Error ${res.status}: ${text}`);
+    	}
+
+	const data = await res.json();
         alert("Busiest Hours:\n" + data.message);
       } catch (err) {
-        alert("Failed to fetch busiest hours.");
-        console.error(err);
+        alert("Failed to fetch busiest hours. Check console.");
+        console.error("Fetch Error", err);
       }
     }
 
