@@ -8,7 +8,7 @@ const assets = [
   './icon-512.png'
 ];
 
-// Install event - cache static files
+// Install event - cache app shell
 self.addEventListener('install', (event) => {
   event.waitUntil(
     caches.open(cacheName).then((cache) => {
@@ -28,19 +28,15 @@ self.addEventListener('activate', (event) => {
   );
 });
 
-// Fetch event - use cache for static, bypass for external/webhooks
+// Fetch event - network-first for external URLs, cache-first for local
 self.addEventListener('fetch', (event) => {
   const url = new URL(event.request.url);
 
-  // If it's a request to an external API or webhook, don't cache
-  if (url.origin.includes('ngrok-free.app') || url.pathname.includes('/webhook-test/')) {
-    event.respondWith(
-      fetch(event.request).catch(() => new Response("Network error"))
-    );
+  // Bypass cache for external requests like ngrok
+  if (!url.origin.includes(self.location.origin)) {
     return;
   }
 
-  // Otherwise, serve from cache or fetch if not cached
   event.respondWith(
     caches.match(event.request).then((res) => {
       return res || fetch(event.request);
