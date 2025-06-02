@@ -191,16 +191,24 @@
       try {
         const res = await fetch("https://suitable-rapidly-terrier.ngrok-free.app/webhook-test/admin-busiest-hours");
 
-	if (!res.ok) {
-          const text = await res.text();
-	  throw new Error('Error ${res.status}: ${text}`);
-    	}
+        const contentType = res.headers.get("content-type");
 
-	const data = await res.json();
-        alert("Busiest Hours:\n" + data.message);
+        if (!res.ok) {
+          const errorText = await res.text();
+          console.error("Server returned error page:", errorText);
+          throw new Error(`Error ${res.status}`);
+        }
+
+        if (contentType && contentType.includes("application/json")) {
+          const data = await res.json();
+          alert("Busiest Hours:\n" + data.message);
+        } else {
+          const fallback = await res.text();
+          alert("Server didn't return JSON:\n" + fallback);
+        }
       } catch (err) {
-        alert("Failed to fetch busiest hours. Check console.");
-        console.error("Fetch Error", err);
+        alert("Failed to fetch busiest hours. See console for details.");
+        console.error("Fetch error:", err);
       }
     }
 
