@@ -76,10 +76,10 @@
   <div id="dashboardView" style="display:none;">
     <form id="gymForm">
       <label for="name">Name</label>
-      <input type="text" id="name" required />
+      <input type="text" id="name" readonly />
 
       <label for="phone">Phone Number</label>
-      <input type="tel" id="phone" required />
+      <input type="tel" id="phone" readonly />
 
       <label for="type">Log Type</label>
       <select id="type">
@@ -97,7 +97,7 @@
     <div id="adminPanel" class="admin-panel" style="display:none;">
       <h3>Admin Panel</h3>
       <ul>
-        <li><a href="https://example.com/onboarding-form" target="_blank">📋 Onboarding Form</a></li>
+        <li><button onclick="window.open('https://tally.so/r/wLyq5z', '_blank')">📋 Onboarding Form</button></li>
         <li><button id="busiestButton">📈 View Busiest Hours</button></li>
         <li><button id="analyticsButton">📊 Attendance Analytics</button></li>
       </ul>
