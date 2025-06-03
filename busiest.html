@@ -2,17 +2,39 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Busiest Hours Today</title>
+  <title>🏋️‍♂️ Busiest Gym Hours</title>
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <style>
     body {
-      font-family: Arial, sans-serif;
+      font-family: 'Segoe UI', sans-serif;
+      margin: 0;
+      padding: 0;
+      background-image: url('https://images.unsplash.com/photo-1558611848-73f7eb4001aa?auto=format&fit=crop&w=1350&q=80');
+      background-size: cover;
+      background-position: center;
+      color: #fff;
+      text-shadow: 1px 1px 2px #000;
+    }
+    .container {
+      backdrop-filter: blur(8px);
+      background: rgba(0, 0, 0, 0.4);
       padding: 20px;
-      background: #f6f8fa;
-      color: #333;
+      min-height: 100vh;
     }
     h2 {
       text-align: center;
+      margin-bottom: 10px;
+    }
+    #back-btn {
+      margin-bottom: 20px;
+      display: inline-block;
+      padding: 10px 15px;
+      background: #ffffff44;
+      color: white;
+      border-radius: 6px;
+      text-decoration: none;
+      font-size: 14px;
+      margin-left: 10px;
     }
     #chart-container {
       width: 100%;
@@ -20,7 +42,7 @@
       margin: 0 auto;
     }
     canvas {
-      background: white;
+      background: rgba(255, 255, 255, 0.9);
       border-radius: 8px;
       padding: 16px;
     }
@@ -28,18 +50,27 @@
       text-align: center;
       margin-top: 50px;
     }
+    #summary {
+      margin-top: 30px;
+      text-align: center;
+      font-size: 16px;
+    }
   </style>
 </head>
 <body>
 
-  <h2>Today's Gym Occupancy</h2>
-  <div id="loading">Loading attendance data...</div>
-  <div id="chart-container" style="display:none;">
-    <canvas id="attendanceChart"></canvas>
+  <div class="container">
+    <a id="back-btn" href="index.html">← Back</a>
+    <h2>📊 Today's Gym Activity Overview</h2>
+    <div id="loading">Loading attendance data...</div>
+    <div id="chart-container" style="display:none;">
+      <canvas id="attendanceChart"></canvas>
+      <div id="summary"></div>
+    </div>
   </div>
 
   <script>
-    const ENDPOINT = 'https://suitable-rapidly-terrier.ngrok-free.app/webhook-test/busiest-hours'; // update with your actual webhook URL
+    const ENDPOINT = 'https://suitable-rapidly-terrier.ngrok-free.app/webhook-test/busiest-hours'; // Replace with your actual n8n webhook
 
     async function fetchAttendance() {
       try {
@@ -47,23 +78,40 @@
           method: 'POST'
         });
 
-        const data = await res.json();  // JSON will be like { "08:00": 1, "09:00": 2, ... }
+        const rawData = await res.json();
 
-        const labels = Object.keys(data);
-        const values = Object.values(data);
+        // Filter out 0-value hours
+        const filtered = Object.entries(rawData).filter(([hour, count]) => count > 0);
+        const labels = filtered.map(([hour]) => hour);
+        const values = filtered.map(([, count]) => count);
+
+        if (labels.length === 0) {
+          document.getElementById("loading").innerText = "No check-ins today!";
+          return;
+        }
+
+        // Calculate busiest and freest hours
+        let busiestIndex = values.indexOf(Math.max(...values));
+        let freestIndex = values.indexOf(Math.min(...values));
+
+        const summaryText = `
+          🏆 Busiest Hour: <strong>${labels[busiestIndex]}</strong> with <strong>${values[busiestIndex]}</strong> people.<br>
+          🧘‍♂️ Least Busy Hour: <strong>${labels[freestIndex]}</strong> with <strong>${values[freestIndex]}</strong> person${values[freestIndex] > 1 ? 's' : ''}.
+        `;
 
         document.getElementById("loading").style.display = "none";
         document.getElementById("chart-container").style.display = "block";
+        document.getElementById("summary").innerHTML = summaryText;
 
         new Chart(document.getElementById("attendanceChart"), {
           type: 'bar',
           data: {
             labels: labels,
             datasets: [{
-              label: "People in Gym (per hour)",
+              label: "👥 Gym Attendance",
               data: values,
-              backgroundColor: "rgba(75, 192, 192, 0.7)",
-              borderRadius: 4,
+              backgroundColor: "rgba(54, 162, 235, 0.7)",
+              borderRadius: 4
             }]
           },
           options: {
@@ -76,7 +124,7 @@
                 },
                 title: {
                   display: true,
-                  text: 'Number of People'
+                  text: 'People in Gym'
                 }
               },
               x: {
@@ -88,8 +136,7 @@
             },
             plugins: {
               title: {
-                display: true,
-                text: 'Busiest Gym Hours Today'
+                display: false
               },
               legend: {
                 display: false
@@ -99,8 +146,8 @@
         });
 
       } catch (err) {
-        document.getElementById("loading").innerText = "Failed to load data.";
-        console.error("Error fetching attendance:", err);
+        document.getElementById("loading").innerText = "⚠️ Failed to load data.";
+        console.error("Error:", err);
       }
     }
 
