@@ -3,781 +3,125 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Gym Tracker</title>
-  <link rel="manifest" href="manifest.json" />
-  <link rel="icon" href="/icon.png" type="image/png" />
-  <link rel="apple-touch-icon" href="/icon.png" />
-
+  <title>Gym PWA</title>
   <style>
     body {
+      font-family: Arial, sans-serif;
       margin: 0;
       padding: 0;
-      font-family: 'Segoe UI', sans-serif;
-      background: url('background.jpg') no-repeat center center fixed;
+      background: #111 url('background.jpg') no-repeat center center fixed;
       background-size: cover;
-      color: #fff;
     }
 
-    h1, h2, h3 {
+    .container {
+      max-width: 600px;
+      margin: auto;
+      padding: 20px;
+      background-color: rgba(255, 255, 255, 0.95);
+      border-radius: 12px;
+      margin-top: 40px;
+      box-shadow: 0 0 12px rgba(0,0,0,0.2);
+    }
+
+    h2 {
       text-align: center;
     }
 
-    form, .login-container, .admin-panel, .member-panel {
-      background: rgba(255, 255, 255, 0.95);
-      color: #333;
-      padding: 2rem;
-      border-radius: 15px;
-      max-width: 400px;
-      margin: 2rem auto;
-      box-shadow: 0 8px 30px rgba(0,0,0,0.3);
-    }
-
-    label {
+    input, button, select {
       display: block;
-      margin-bottom: 0.3rem;
-      font-weight: bold;
-    }
-
-    input, select, textarea, button {
       width: 100%;
-      padding: 0.7rem;
-      margin-bottom: 1rem;
-      border-radius: 8px;
-      border: 1px solid #ccc;
+      padding: 10px;
+      margin-top: 10px;
       font-size: 1rem;
-    }
-
-    button {
-      background-color: #28a745;
-      color: white;
-      font-weight: bold;
-      border: none;
-      cursor: pointer;
-      transition: background 0.3s;
-    }
-
-    button:hover {
-      background-color: #218838;
-    }
-
-    .admin-panel button,
-    .member-panel button {
-      margin-bottom: 0.5rem;
-    }
-
-    #expiryDashboard, #mealReviews {
-      background: rgba(255,255,255,0.9);
-      color: #333;
-      max-width: 600px;
-      margin: 2rem auto;
-      padding: 1rem 2rem;
-      border-radius: 15px;
-      box-shadow: 0 8px 20px rgba(0,0,0,0.2);
-    }
-
-    #mealToggle {
-      margin: 0 auto 1rem;
-      display: block;
-      width: fit-content;
-      font-weight: bold;
-    }
-
-    #mealReviews textarea {
-      width: 100%;
-      height: 100px;
-      margin-top: 0.5rem;
-      resize: vertical;
-      font-family: monospace;
-      background: #f8f8f8;
       border-radius: 8px;
       border: 1px solid #ccc;
-      padding: 1rem;
-      color: #000;
     }
 
+    .admin-section, .member-section {
+      margin-top: 30px;
+    }
+
+    .loading {
+      font-weight: bold;
+      font-style: italic;
+      color: #007bff;
+      padding: 5px 0;
+    }
+
+    .dashboard {
+      margin-top: 10px;
+    }
   </style>
 </head>
 <body>
-  <h1>🏋️ Gym Tracker</h1>
-  <div id="motivational-quote" style="
-    background-color: #f0f8ff;
-    color: #333;
-    font-size: 1.2em;
-    font-style: italic;
-    padding: 10px 20px;
-    text-align: center;
-    border-bottom: 2px solid #ccc;
-    ">
-    <!-- Quote will appear here -->
-  </div>
-  <!-- Login View -->
-  <div id="loginView" class="login-container">
-    <h2>Login</h2>
-    <input type="text" id="loginName" placeholder="Name" required />
-    <input type="tel" id="loginPhone" placeholder="Phone Number" required />
-    <button id="loginButton">Login</button>
-  </div>
+  <div class="container">
+    <h2>Gym Dashboard</h2>
+    <input type="text" id="nameInput" placeholder="Enter your name" />
+    <button onclick="handleLogin()">Login</button>
 
-  <!-- Dashboard View -->
-  <div id="dashboardView" style="display:none;">
-    <form id="gymForm">
-      <label for="name">Name</label>
-      <input type="text" id="name" readonly />
-
-      <label for="phone">Phone Number</label>
-      <input type="tel" id="phone" readonly />
-
-      <label for="type">Log Type</label>
-      <select id="type">
-        <option value="attendance">Attendance</option>
-        <option value="calorie">Calorie Log</option>
-      </select>
-
-      <label for="calorie" id="calorieLabel" style="display:none;">Calorie Description</label>
-      <textarea id="calorie" placeholder="e.g., 2 bananas + 1 egg" style="display:none;"></textarea>
-
-      <button type="submit">Submit</button>
-    </form>
-
-    <!-- Admin Panel -->
-    <div id="adminPanel" class="admin-panel" style="display:none;">
-      <h3>Admin Panel</h3>
-      <ul>
-        <li><button onclick="window.open('https://tally.so/r/wLyq5z', '_blank')">📋 Onboarding Form</button></li>
-        <li><button onclick="window.open('https://tally.so/r/3150WW', '_blank')">⏸️ Pause/Renew Membership Form</button></li>
-        <li><button id="attendanceAnalyticsButton">📊 Attendance Analytics 📈</button></li>
-      </ul>
+    <div id="adminFeatures" class="admin-section" style="display: none;">
+      <h3>Admin Features</h3>
+      <button onclick="window.open('https://tally.so/r/w4pz8d', '_blank')">Onboard New Member</button>
+      <button onclick="window.open('https://tally.so/r/w4Rjzv', '_blank')">Renew / Pause Membership</button>
+      <button onclick="window.open('search-member.html', '_blank')">Search Member</button>
+      <button id="loadExpiryBtn">View Expiry Dashboard</button>
+      <div id="expiryDashboard" class="dashboard"></div>
+      <button onclick="window.open('attendance-analytics.html', '_blank')">Attendance Analytics</button>
     </div>
 
-    <!-- Member Feature Panel -->
-    <div id="memberPanel" class="member-panel" style="display:none;">
+    <div id="memberFeatures" class="member-section" style="display: none;">
       <h3>Member Features</h3>
-      <button id="attendanceAnalyticsButtonMember">📊 Attendance Analytics 📈</button>
-    </div>
-
-    <!-- Expiry Notification Dashboard for Admin -->
-    <div id="expiryDashboard" style="display:none;">
-      <h3>Membership Expiry Notifications</h3>
-      <div id="expiryList">Loading expiry data...</div>
-    </div>
-
-    <!-- Meal Reviews with toggle -->
-    <div id="mealReviews" style="display:none;">
-      <h3>Meal Reviews</h3>
-      <label for="mealToggle">Toggle View:</label>
+      <label for="mealToggle">View Meal Summary:</label>
       <select id="mealToggle">
         <option value="daily">Daily</option>
         <option value="weekly">Weekly</option>
       </select>
-      <textarea id="mealReviewText" readonly>Loading meal reviews...</textarea>
+      <button id="loadMealReviewBtn">Load Meal Summary</button>
+      <div id="mealReview" class="dashboard"></div>
     </div>
   </div>
 
   <script>
-    // Hardcoded admin users
-    const ADMIN_USERS = [
-      { name: "Yash Sharma", phone: "919821098933" },
-      { name: "Pankaj Dhama", phone: "919716986669" },  // Add more admins here if needed
-    ];
-
-    // On page load
-    window.onload = () => {
-      const user = JSON.parse(localStorage.getItem("gymUser"));
-      if (user) {
-        alert(`Welcome back, ${user.name}!`);
-        showDashboard(user);
-      }
-
-      document.getElementById('loginButton').addEventListener('click', loginUser);
-
-      document.getElementById('attendanceAnalyticsButton')?.addEventListener('click', () => {
-        window.location.href = 'busiest.html'; // or attendance analytics page
-      });
-
-      document.getElementById('attendanceAnalyticsButtonMember')?.addEventListener('click', () => {
-        window.location.href = 'busiest.html';
-      });
-
-      document.getElementById('attendanceAnalyticsButton')?.addEventListener('click', getAttendanceAnalytics);
-
-      // Meal toggle change event
-      document.getElementById('mealToggle').addEventListener('change', fetchMealReviews);
-    };
-
-    const form = document.getElementById('gymForm');
-    const typeField = document.getElementById('type');
-    const calorieField = document.getElementById('calorie');
-    const calorieLabel = document.getElementById('calorieLabel');
-
-    typeField.addEventListener('change', () => {
-      const isCalorie = typeField.value === 'calorie';
-      calorieField.style.display = isCalorie ? 'block' : 'none';
-      calorieLabel.style.display = isCalorie ? 'block' : 'none';
-      if (!isCalorie) calorieField.value = '';
-    });
-
-    form.addEventListener('submit', async (e) => {
-      e.preventDefault();
-      const data = {
-        name: document.getElementById('name').value,
-        phone: document.getElementById('phone').value,
-        type: typeField.value,
-        calorie: calorieField.value
-      };
-
-      try {
-        const response = await fetch('https://suitable-rapidly-terrier.ngrok-free.app/webhook-test/gym-log', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(data)
-        });
-
-        const resData = await response.json();
-        if (resData.success) {
-          alert("Form submitted successfully!");
-          // Optionally reset calorie field if calorie log
-          if (typeField.value === 'calorie') calorieField.value = '';
-        } else {
-          alert("Submission failed: " + (resData.message || "Unknown error"));
-        }
-      } catch (err) {
-        alert("Error submitting form: " + err.message);
-      }
-    });
-
-    async function loginUser() {
-      const name = document.getElementById('loginName').value.trim();
-      const phone = document.getElementById('loginPhone').value.trim();
-
-      if (!name || !phone) {
-        alert('Please enter both name and phone number.');
-        return;
-      }
-
-      // Check if user is admin (hardcoded)
-      const isAdmin = ADMIN_USERS.some(admin => admin.name.toLowerCase() === name.toLowerCase() && admin.phone === phone);
+    function handleLogin() {
+      const name = document.getElementById('nameInput').value.trim();
+      const admins = ['Yash', 'Ankit', 'Rishi'];
+      const isAdmin = admins.includes(name); // Case-sensitive check
 
       if (isAdmin) {
-        const user = { name, phone, role: 'admin' };
-        localStorage.setItem('gymUser', JSON.stringify(user));
-        alert(`Welcome Admin ${name}!`);
-        showDashboard(user);
-        return;
-      }
-
-      // Otherwise check Airtable via n8n webhook
-      try {
-        const response = await fetch('https://suitable-rapidly-terrier.ngrok-free.app/webhook-test/check-member', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ name, phone })
-        });
-
-        const data = await response.json();
-        if (data && data.exists) {
-          const user = { name: data.name || name, phone: data.phone || phone, role: 'member' };
-          localStorage.setItem('gymUser', JSON.stringify(user));
-          alert(`Welcome ${user.name}!`);
-          showDashboard(user);
-        } else {
-          alert('No matching member found. Please check your name and phone or contact admin.');
-        }
-      } catch (err) {
-        alert('Error during login: ' + err.message);
-      }
-    }
-
-    function showDashboard(user) {
-      document.getElementById('loginView').style.display = 'none';
-      document.getElementById('dashboardView').style.display = 'block';
-
-      document.getElementById('name').value = user.name;
-      document.getElementById('phone').value = user.phone;
-
-      if (user.role === 'admin') {
-        document.getElementById('adminPanel').style.display = 'block';
-        document.getElementById('memberPanel').style.display = 'none';
-        document.getElementById('expiryDashboard').style.display = 'block';
-        document.getElementById('mealReviews').style.display = 'block';
-        loadExpiryData();
-        fetchMealReviews(); // load default daily on login
+        document.getElementById('adminFeatures').style.display = 'block';
+        document.getElementById('memberFeatures').style.display = 'block';
       } else {
-        document.getElementById('adminPanel').style.display = 'none';
-        document.getElementById('memberPanel').style.display = 'block';
-        document.getElementById('expiryDashboard').style.display = 'none';
-        document.getElementById('mealReviews').style.display = 'block';
-        fetchMealReviews();
+        document.getElementById('adminFeatures').style.display = 'none';
+        document.getElementById('memberFeatures').style.display = 'block';
       }
     }
 
-    async function loadExpiryData() {
-      const expiryListDiv = document.getElementById('expiryList');
-      expiryListDiv.textContent = "Loading expiry data...";
-
+    document.getElementById('loadMealReviewBtn').addEventListener('click', async () => {
+      const mealReview = document.getElementById('mealReview');
+      const type = document.getElementById('mealToggle').value;
+      mealReview.innerHTML = '<p class="loading">Loading meal summary...</p>';
       try {
-        const response = await fetch('https://suitable-rapidly-terrier.ngrok-free.app/webhook-test/get-expiry-data', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({})
-        });
+        const response = await fetch(`https://yashn8ninstance.n8n.cloud/webhook/meal-review?type=${type}`);
         const data = await response.json();
-
-        if (!data || !Array.isArray(data.expiries)) {
-          expiryListDiv.textContent = 'Failed to load expiry data.';
-          return;
-        }
-
-        if (data.expiries.length === 0) {
-          expiryListDiv.textContent = 'No memberships expiring within ±7 days.';
-          return;
-        }
-
-        const ul = document.createElement('ul');
-        data.expiries.forEach(item => {
-          const li = document.createElement('li');
-          li.textContent = `${item.name} (${item.phone}) — Expiry: ${item.endDate} — Status: ${item.status}`;
-          ul.appendChild(li);
-        });
-
-        expiryListDiv.innerHTML = '';
-        expiryListDiv.appendChild(ul);
-
-      } catch (err) {
-        expiryListDiv.textContent = 'Error loading expiry data: ' + err.message;
-      }
-    }
-
-    // Fetch meal reviews: daily or weekly
-    async function fetchMealReviews() {
-      const toggle = document.getElementById('mealToggle').value;
-      const reviewText = document.getElementById('mealReviewText');
-      reviewText.value = 'Loading ' + toggle + ' meal reviews...';
-
-      const endpointMap = {
-        daily: 'https://suitable-rapidly-terrier.ngrok-free.app/webhook-test/get-daily-meal-reviews',
-        weekly: 'https://suitable-rapidly-terrier.ngrok-free.app/webhook-test/get-weekly-meal-reviews'
-      };
-
-      try {
-        const response = await fetch(endpointMap[toggle], {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({})
-        });
-
-        const data = await response.json();
-        if (!data || !data.reviews) {
-          reviewText.value = 'No reviews available.';
-          return;
-        }
-
-        reviewText.value = data.reviews.join('\n\n') || 'No reviews found.';
-
-      } catch (err) {
-        reviewText.value = 'Error loading reviews: ' + err.message;
-      }
-    }
-
-    // Attendance analytics button - just redirect
-    async function getAttendanceAnalytics() {
-      // redirect
-      // window.location.href = 'attendance-analytics.html';
-    }
-  </script>
-  <script>
-    const quotes = [
-      "The only bad workout is the one that didn’t happen.",
-      "Push yourself because no one else is going to do it for you.",
-      "Sweat is fat crying.",
-      "Don't limit your challenges, challenge your limits.",
-      "Success starts with self-discipline."
-    ];
-
-    function getDailyQuote() {
-      // Use current day of week to pick a quote
-      const index = new Date().getDay() % quotes.length;
-      return quotes[index];
-    }
-
-    // Set the quote text inside the div
-    document.getElementById('motivational-quote').textContent = getDailyQuote();
-  </script>
-</body>
-</html>
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Gym Tracker</title>
-  <link rel="manifest" href="manifest.json" />
-  <link rel="icon" href="/icon.png" type="image/png" />
-  <link rel="apple-touch-icon" href="/icon.png" />
-
-  <style>
-    body {
-      margin: 0;
-      padding: 0;
-      font-family: 'Segoe UI', sans-serif;
-      background: url('background.jpg') no-repeat center center fixed;
-      background-size: cover;
-      color: #fff;
-    }
-
-    h1, h2, h3 {
-      text-align: center;
-    }
-
-    form, .login-container, .admin-panel, .member-panel {
-      background: rgba(255, 255, 255, 0.95);
-      color: #333;
-      padding: 2rem;
-      border-radius: 15px;
-      max-width: 400px;
-      margin: 2rem auto;
-      box-shadow: 0 8px 30px rgba(0,0,0,0.3);
-    }
-
-    label {
-      display: block;
-      margin-bottom: 0.3rem;
-      font-weight: bold;
-    }
-
-    input, select, textarea, button {
-      width: 100%;
-      padding: 0.7rem;
-      margin-bottom: 1rem;
-      border-radius: 8px;
-      border: 1px solid #ccc;
-      font-size: 1rem;
-    }
-
-    button {
-      background-color: #28a745;
-      color: white;
-      font-weight: bold;
-      border: none;
-      cursor: pointer;
-      transition: background 0.3s;
-    }
-
-    button:hover {
-      background-color: #218838;
-    }
-
-    .admin-panel button,
-    .member-panel button {
-      margin-bottom: 0.5rem;
-    }
-
-    #expiryDashboard, #mealReviews {
-      background: rgba(255,255,255,0.9);
-      color: #333;
-      max-width: 600px;
-      margin: 2rem auto;
-      padding: 1rem 2rem;
-      border-radius: 15px;
-      box-shadow: 0 8px 20px rgba(0,0,0,0.2);
-    }
-
-    #mealToggle {
-      margin: 0 auto 1rem;
-      display: block;
-      width: fit-content;
-      font-weight: bold;
-    }
-
-    #mealReviews textarea {
-      width: 100%;
-      height: 100px;
-      margin-top: 0.5rem;
-      resize: vertical;
-      font-family: monospace;
-      background: #f8f8f8;
-      border-radius: 8px;
-      border: 1px solid #ccc;
-      padding: 1rem;
-      color: #000;
-    }
-
-  </style>
-</head>
-<body>
-  <div id="motivational-quote" style="
-    background-color: #f0f8ff;
-    color: #333;
-    font-size: 1.2em;
-    font-style: italic;
-    padding: 10px 20px;
-    text-align: center;
-    border-bottom: 2px solid #ccc;
-    ">
-    <!-- Quote will appear here -->
-  </div>
-  <!-- Dashboard View -->
-  <div id="dashboardView" style="display:none;">
-    <form id="gymForm">
-      <label for="name">Name</label>
-      <input type="text" id="name" readonly />
-
-      <label for="phone">Phone Number</label>
-      <input type="tel" id="phone" readonly />
-
-      <label for="type">Log Type</label>
-      <select id="type">
-        <option value="attendance">Attendance</option>
-        <option value="calorie">Calorie Log</option>
-      </select>
-
-      <label for="calorie" id="calorieLabel" style="display:none;">Calorie Description</label>
-      <textarea id="calorie" placeholder="e.g., 2 bananas + 1 egg" style="display:none;"></textarea>
-
-      <button type="submit">Submit</button>
-    </form>
-
-    <!-- Admin Panel -->
-    <div id="adminPanel" class="admin-panel" style="display:none;">
-      <h3>Admin Panel</h3>
-      <ul>
-        <li><button onclick="window.open('https://tally.so/r/wLyq5z', '_blank')">📋 Onboarding Form</button></li>
-        <li><button onclick="window.open('https://tally.so/r/3150WW', '_blank')">⏸️ Pause/Renew Membership Form</button></li>
-        <li><button id="attendanceAnalyticsButton">📊 Attendance Analytics 📈</button></li>
-      </ul>
-    </div>
-
-    <!-- Member Feature Panel -->
-    <div id="memberPanel" class="member-panel" style="display:none;">
-      <h3>Member Features</h3>
-      <button id="attendanceAnalyticsButtonMember">📊 Attendance Analytics 📈</button>
-    </div>
-
-    <!-- Expiry Notification Dashboard for Admin -->
-    <div id="expiryDashboard" style="display:none;">
-      <h3>Membership Expiry Notifications</h3>
-      <div id="expiryList">Loading expiry data...</div>
-    </div>
-
-    <!-- Meal Reviews with toggle -->
-    <div id="mealReviews" style="display:none;">
-      <h3>Meal Reviews</h3>
-      <label for="mealToggle">Toggle View:</label>
-      <select id="mealToggle">
-        <option value="daily">Daily</option>
-        <option value="weekly">Weekly</option>
-      </select>
-      <textarea id="mealReviewText" readonly>Loading meal reviews...</textarea>
-    </div>
-  </div>
-
-  <script>
-    // Hardcoded admin users
-    const ADMIN_USERS = [
-      { name: "Yash Sharma", phone: "919821098933" },
-      { name: "Pankaj Dhama", phone: "919716986669" },  // Add more admins here if needed
-    ];
-
-    // On page load
-    window.onload = () => {
-      const user = JSON.parse(localStorage.getItem("gymUser"));
-      if (user) {
-        alert(`Welcome back, ${user.name}!`);
-        showDashboard(user);
-      }
-
-      document.getElementById('loginButton').addEventListener('click', loginUser);
-
-      document.getElementById('attendanceAnalyticsButton')?.addEventListener('click', () => {
-        window.location.href = 'busiest.html'; // or attendance analytics page
-      });
-
-      document.getElementById('attendanceAnalyticsButtonMember')?.addEventListener('click', () => {
-        window.location.href = 'busiest.html';
-      });
-
-            // Meal toggle change event
-      document.getElementById('mealToggle').addEventListener('change', fetchMealReviews);
-    };
-
-    const form = document.getElementById('gymForm');
-    const typeField = document.getElementById('type');
-    const calorieField = document.getElementById('calorie');
-    const calorieLabel = document.getElementById('calorieLabel');
-
-    typeField.addEventListener('change', () => {
-      const isCalorie = typeField.value === 'calorie';
-      calorieField.style.display = isCalorie ? 'block' : 'none';
-      calorieLabel.style.display = isCalorie ? 'block' : 'none';
-      if (!isCalorie) calorieField.value = '';
-    });
-
-    form.addEventListener('submit', async (e) => {
-      e.preventDefault();
-      const data = {
-        name: document.getElementById('name').value,
-        phone: document.getElementById('phone').value,
-        type: typeField.value,
-        calorie: calorieField.value
-      };
-
-      try {
-        const response = await fetch('https://suitable-rapidly-terrier.ngrok-free.app/webhook-test/gym-log', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(data)
-        });
-
-        const resData = await response.json();
-        if (resData.success) {
-          alert("Form submitted successfully!");
-          // Optionally reset calorie field if calorie log
-          if (typeField.value === 'calorie') calorieField.value = '';
-        } else {
-          alert("Submission failed: " + (resData.message || "Unknown error"));
-        }
-      } catch (err) {
-        alert("Error submitting form: " + err.message);
+        mealReview.innerHTML = data.message;
+      } catch (error) {
+        mealReview.innerHTML = '<p class="loading">Error fetching meal data.</p>';
+        console.error(error);
       }
     });
 
-    async function loginUser() {
-      const name = document.getElementById('loginName').value.trim();
-      const phone = document.getElementById('loginPhone').value.trim();
-
-      if (!name || !phone) {
-        alert('Please enter both name and phone number.');
-        return;
-      }
-
-      // Check if user is admin (hardcoded)
-      const isAdmin = ADMIN_USERS.some(admin => admin.name.toLowerCase() === name.toLowerCase() && admin.phone === phone);
-
-      if (isAdmin) {
-        const user = { name, phone, role: 'admin' };
-        localStorage.setItem('gymUser', JSON.stringify(user));
-        alert(`Welcome Admin ${name}!`);
-        showDashboard(user);
-        return;
-      }
-
-      // Otherwise check Airtable via n8n webhook
+    document.getElementById('loadExpiryBtn').addEventListener('click', async () => {
+      const expiryDashboard = document.getElementById('expiryDashboard');
+      expiryDashboard.innerHTML = '<p class="loading">Loading expiry data...</p>';
       try {
-        const response = await fetch('https://suitable-rapidly-terrier.ngrok-free.app/webhook-test/check-member', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ name, phone })
-        });
-
+        const response = await fetch('https://yashn8ninstance.n8n.cloud/webhook/expiry-dashboard');
         const data = await response.json();
-        if (data && data.exists) {
-          const user = { name: data.name || name, phone: data.phone || phone, role: 'member' };
-          localStorage.setItem('gymUser', JSON.stringify(user));
-          alert(`Welcome ${user.name}!`);
-          showDashboard(user);
-        } else {
-          alert('No matching member found. Please check your name and phone or contact admin.');
-        }
-      } catch (err) {
-        alert('Error during login: ' + err.message);
+        expiryDashboard.innerHTML = data.message;
+      } catch (error) {
+        expiryDashboard.innerHTML = '<p class="loading">Error fetching expiry data.</p>';
+        console.error(error);
       }
-    }
-
-    function showDashboard(user) {
-      document.getElementById('loginView').style.display = 'none';
-      document.getElementById('dashboardView').style.display = 'block';
-
-      document.getElementById('name').value = user.name;
-      document.getElementById('phone').value = user.phone;
-
-      if (user.role === 'admin') {
-        document.getElementById('adminPanel').style.display = 'block';
-        document.getElementById('memberPanel').style.display = 'none';
-        document.getElementById('expiryDashboard').style.display = 'block';
-        document.getElementById('mealReviews').style.display = 'block';
-        loadExpiryData();
-        fetchMealReviews(); // load default daily on login
-      } else {
-        document.getElementById('adminPanel').style.display = 'none';
-        document.getElementById('memberPanel').style.display = 'block';
-        document.getElementById('expiryDashboard').style.display = 'none';
-        document.getElementById('mealReviews').style.display = 'block';
-        fetchMealReviews();
-      }
-    }
-
-    async function loadExpiryData() {
-      const expiryListDiv = document.getElementById('expiryList');
-      expiryListDiv.textContent = "Loading expiry data...";
-
-      try {
-        const response = await fetch('https://suitable-rapidly-terrier.ngrok-free.app/webhook-test/get-expiry-data', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({})
-        });
-        const data = await response.json();
-
-        if (!data || !Array.isArray(data.expiries)) {
-          expiryListDiv.textContent = 'Failed to load expiry data.';
-          return;
-        }
-
-        if (data.expiries.length === 0) {
-          expiryListDiv.textContent = 'No memberships expiring within ±7 days.';
-          return;
-        }
-
-        const ul = document.createElement('ul');
-        data.expiries.forEach(item => {
-          const li = document.createElement('li');
-          li.textContent = `${item.name} (${item.phone}) — Expiry: ${item.endDate} — Status: ${item.status}`;
-          ul.appendChild(li);
-        });
-
-        expiryListDiv.innerHTML = '';
-        expiryListDiv.appendChild(ul);
-
-      } catch (err) {
-        expiryListDiv.textContent = 'Error loading expiry data: ' + err.message;
-      }
-    }
-
-    // Fetch meal reviews: daily or weekly
-    async function fetchMealReviews() {
-      const toggle = document.getElementById('mealToggle').value;
-      const reviewText = document.getElementById('mealReviewText');
-      reviewText.value = 'Loading ' + toggle + ' meal reviews...';
-
-      const endpointMap = {
-        daily: 'https://suitable-rapidly-terrier.ngrok-free.app/webhook-test/get-daily-meal-reviews',
-        weekly: 'https://suitable-rapidly-terrier.ngrok-free.app/webhook-test/get-weekly-meal-reviews'
-      };
-
-      try {
-        const response = await fetch(endpointMap[toggle], {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({})
-        });
-
-        const data = await response.json();
-        if (!data || !data.reviews) {
-          reviewText.value = 'No reviews available.';
-          return;
-        }
-
-        reviewText.value = data.reviews.join('\n\n') || 'No reviews found.';
-
-      } catch (err) {
-        reviewText.value = 'Error loading reviews: ' + err.message;
-      }
-    }
-
-    // Attendance analytics button - just redirect
-    async function getAttendanceAnalytics() {
-      // redirect
-      // window.location.href = 'attendance-analytics.html';
-    }
+    });
   </script>
 </body>
 </html>
