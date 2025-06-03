@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Busiest Hours Today</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      padding: 20px;
+      background: #f6f8fa;
+      color: #333;
+    }
+    h2 {
+      text-align: center;
+    }
+    #chart-container {
+      width: 100%;
+      max-width: 800px;
+      margin: 0 auto;
+    }
+    canvas {
+      background: white;
+      border-radius: 8px;
+      padding: 16px;
+    }
+    #loading {
+      text-align: center;
+      margin-top: 50px;
+    }
+  </style>
+</head>
+<body>
+
+  <h2>Today's Gym Occupancy</h2>
+  <div id="loading">Loading attendance data...</div>
+  <div id="chart-container" style="display:none;">
+    <canvas id="attendanceChart"></canvas>
+  </div>
+
+  <script>
+    const ENDPOINT = 'https://suitable-rapidly-terrier.ngrok-free.app/webhook-test/busiest-hours'; // update with your actual webhook URL
+
+    async function fetchAttendance() {
+      try {
+        const res = await fetch(ENDPOINT, {
+          method: 'POST'
+        });
+
+        const data = await res.json();  // JSON will be like { "08:00": 1, "09:00": 2, ... }
+
+        const labels = Object.keys(data);
+        const values = Object.values(data);
+
+        document.getElementById("loading").style.display = "none";
+        document.getElementById("chart-container").style.display = "block";
+
+        new Chart(document.getElementById("attendanceChart"), {
+          type: 'bar',
+          data: {
+            labels: labels,
+            datasets: [{
+              label: "People in Gym (per hour)",
+              data: values,
+              backgroundColor: "rgba(75, 192, 192, 0.7)",
+              borderRadius: 4,
+            }]
+          },
+          options: {
+            responsive: true,
+            scales: {
+              y: {
+                beginAtZero: true,
+                ticks: {
+                  stepSize: 1
+                },
+                title: {
+                  display: true,
+                  text: 'Number of People'
+                }
+              },
+              x: {
+                title: {
+                  display: true,
+                  text: 'Hour of the Day'
+                }
+              }
+            },
+            plugins: {
+              title: {
+                display: true,
+                text: 'Busiest Gym Hours Today'
+              },
+              legend: {
+                display: false
+              }
+            }
+          }
+        });
+
+      } catch (err) {
+        document.getElementById("loading").innerText = "Failed to load data.";
+        console.error("Error fetching attendance:", err);
+      }
+    }
+
+    fetchAttendance();
+  </script>
+
+</body>
+</html>
