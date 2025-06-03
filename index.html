@@ -189,7 +189,12 @@
 
     async function getBusiestHours() {
       try {
-        const res = await fetch("https://suitable-rapidly-terrier.ngrok-free.app/webhook-test/admin-busiest-hours");
+        const res = await fetch("https://suitable-rapidly-terrier.ngrok-free.app/webhook-test/admin-busiest-hours-post", {
+	method: "POST",
+      	headers: { "Content-Type": "application/json" },
+      	body: JSON.stringify({ fetch: true }) // dummy payload
+	});
+
         const contentType = res.headers.get("content-type");
 
         if (!res.ok) {
