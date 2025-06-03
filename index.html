@@ -135,15 +135,14 @@
       <ul>
         <li><button onclick="window.open('https://tally.so/r/wLyq5z', '_blank')">📋 Onboarding Form</button></li>
         <li><button onclick="window.open('https://tally.so/r/PAUSE-RENEW-FORM', '_blank')">⏸️ Pause/Renew Membership Form</button></li>
-        <li><button id="attendanceAnalyticsButton">📊 Attendance Analytics</button></li>
-        <li><button id="busiestButton">📈 View Busiest Hours</button></li>
+        <li><button id="attendanceAnalyticsButton">📊 Attendance Analytics 📈/button></li>
       </ul>
     </div>
 
     <!-- Member Feature Panel -->
     <div id="memberPanel" class="member-panel" style="display:none;">
       <h3>Member Features</h3>
-      <button id="busiestButtonMember">📈 View Busiest Hours</button>
+      <button id="attendanceAnalyticsButtonMember">📊 Attendance Analytics 📈/button>
     </div>
 
     <!-- Expiry Notification Dashboard for Admin -->
@@ -181,11 +180,11 @@
 
       document.getElementById('loginButton').addEventListener('click', loginUser);
 
-      document.getElementById('busiestButton')?.addEventListener('click', () => {
+      document.getElementById('attendanceAnalyticsButton')?.addEventListener('click', () => {
         window.location.href = 'busiest.html'; // or attendance analytics page
       });
 
-      document.getElementById('busiestButtonMember')?.addEventListener('click', () => {
+      document.getElementById('attendanceAnalyticsButtonMember')?.addEventListener('click', () => {
         window.location.href = 'busiest.html';
       });
 
@@ -478,7 +477,6 @@
   </style>
 </head>
 <body>
-  <h1>🏋️ Gym Tracker</h1>
 
   <!-- Dashboard View -->
   <div id="dashboardView" style="display:none;">
@@ -507,15 +505,14 @@
       <ul>
         <li><button onclick="window.open('https://tally.so/r/wLyq5z', '_blank')">📋 Onboarding Form</button></li>
         <li><button onclick="window.open('https://tally.so/r/PAUSE-RENEW-FORM', '_blank')">⏸️ Pause/Renew Membership Form</button></li>
-        <li><button id="attendanceAnalyticsButton">📊 Attendance Analytics</button></li>
-        <li><button id="busiestButton">📈 View Busiest Hours</button></li>
+        <li><button id="attendanceAnalyticsButton">📊 Attendance Analytics 📈</button></li>
       </ul>
     </div>
 
     <!-- Member Feature Panel -->
     <div id="memberPanel" class="member-panel" style="display:none;">
       <h3>Member Features</h3>
-      <button id="busiestButtonMember">📈 View Busiest Hours</button>
+      <button id="attendanceAnalyticsButtonMember">📊 Attendance Analytics 📈</button>
     </div>
 
     <!-- Expiry Notification Dashboard for Admin -->
@@ -553,17 +550,15 @@
 
       document.getElementById('loginButton').addEventListener('click', loginUser);
 
-      document.getElementById('busiestButton')?.addEventListener('click', () => {
+      document.getElementById('attendanceAnalyticsButton')?.addEventListener('click', () => {
         window.location.href = 'busiest.html'; // or attendance analytics page
       });
 
-      document.getElementById('busiestButtonMember')?.addEventListener('click', () => {
+      document.getElementById('attendanceAnalyticsButtonMember')?.addEventListener('click', () => {
         window.location.href = 'busiest.html';
       });
 
-      document.getElementById('attendanceAnalyticsButton')?.addEventListener('click', getAttendanceAnalytics);
-
-      // Meal toggle change event
+            // Meal toggle change event
       document.getElementById('mealToggle').addEventListener('change', fetchMealReviews);
     };
 
