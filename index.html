@@ -99,7 +99,17 @@
 </head>
 <body>
   <h1>🏋️ Gym Tracker</h1>
-
+  <div id="motivational-quote" style="
+    background-color: #f0f8ff;
+    color: #333;
+    font-size: 1.2em;
+    font-style: italic;
+    padding: 10px 20px;
+    text-align: center;
+    border-bottom: 2px solid #ccc;
+    ">
+    <!-- Quote will appear here -->
+  </div>
   <!-- Login View -->
   <div id="loginView" class="login-container">
     <h2>Login</h2>
@@ -374,6 +384,24 @@
       // window.location.href = 'attendance-analytics.html';
     }
   </script>
+  <script>
+    const quotes = [
+      "The only bad workout is the one that didn’t happen.",
+      "Push yourself because no one else is going to do it for you.",
+      "Sweat is fat crying.",
+      "Don't limit your challenges, challenge your limits.",
+      "Success starts with self-discipline."
+    ];
+
+    function getDailyQuote() {
+      // Use current day of week to pick a quote
+      const index = new Date().getDay() % quotes.length;
+      return quotes[index];
+    }
+
+    // Set the quote text inside the div
+    document.getElementById('motivational-quote').textContent = getDailyQuote();
+  </script>
 </body>
 </html>
 <!DOCTYPE html>
@@ -476,7 +504,17 @@
   </style>
 </head>
 <body>
-
+  <div id="motivational-quote" style="
+    background-color: #f0f8ff;
+    color: #333;
+    font-size: 1.2em;
+    font-style: italic;
+    padding: 10px 20px;
+    text-align: center;
+    border-bottom: 2px solid #ccc;
+    ">
+    <!-- Quote will appear here -->
+  </div>
   <!-- Dashboard View -->
   <div id="dashboardView" style="display:none;">
     <form id="gymForm">
