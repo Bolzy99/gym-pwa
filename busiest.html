@@ -61,7 +61,7 @@
       margin-top: 50px;
     }
 
-    #summary, #current {
+    #summary, #current, #live-members {
       text-align: center;
       font-size: 16px;
       margin-top: 15px;
@@ -77,6 +77,16 @@
       margin: 20px auto 10px auto;
       max-width: 90%;
     }
+
+    #live-members ul {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+    }
+
+    #live-members li {
+      margin: 5px 0;
+    }
   </style>
 </head>
 <body>
@@ -90,6 +100,7 @@
       <canvas id="attendanceChart"></canvas>
       <div id="summary"></div>
       <div id="current"></div>
+      <div id="live-members"></div>
       <div id="motivation"></div>
     </div>
   </div>
@@ -110,7 +121,10 @@
         const res = await fetch(ENDPOINT, { method: 'POST' });
         const rawData = await res.json();
 
-        const filtered = Object.entries(rawData).filter(([hour, count]) => count > 0);
+        const attendanceData = rawData.attendance || rawData;
+        const liveVisitors = rawData.liveVisitors || [];
+
+        const filtered = Object.entries(attendanceData).filter(([hour, count]) => count > 0);
         const labels = filtered.map(([hour]) => hour);
         const values = filtered.map(([, count]) => count);
 
@@ -124,7 +138,7 @@
 
         const now = new Date();
         const currentHour = now.getHours();
-        const currentAttendance = rawData[`${currentHour.toString().padStart(2, '0')}:00`] || 0;
+        const currentAttendance = attendanceData[`${currentHour.toString().padStart(2, '0')}:00`] || 0;
 
         const summaryText = `
           🏆 Busiest Hour: <strong>${labels[busiestIndex]}</strong> with <strong>${values[busiestIndex]}</strong> people.<br>
@@ -138,6 +152,21 @@
         document.getElementById("summary").innerHTML = summaryText;
         document.getElementById("current").innerHTML = currentText;
         document.getElementById("motivation").innerText = tipText;
+
+        // Display live member list
+        const liveMembersDiv = document.getElementById("live-members");
+        if (liveVisitors.length > 0) {
+          const ul = document.createElement('ul');
+          liveVisitors.forEach(member => {
+            const li = document.createElement('li');
+            li.textContent = `🟢 ${member}`;
+            ul.appendChild(li);
+          });
+          liveMembersDiv.innerHTML = "<strong>Live Members:</strong>";
+          liveMembersDiv.appendChild(ul);
+        } else {
+          liveMembersDiv.innerHTML = "<strong>No members currently in the gym.</strong>";
+        }
 
         new Chart(document.getElementById("attendanceChart"), {
           type: 'bar',
