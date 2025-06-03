@@ -25,6 +25,7 @@
             --text-light-primary: #f8f9fa;
             --text-light-secondary: #e0e0e0;
             --text-light-muted: rgba(236, 240, 241, 0.75);
+            --text-dark-primary: #2c3e50; /* Dark text for light backgrounds */
 
             /* Backgrounds & Borders for Glassmorphism */
             --container-bg: rgba(35, 35, 45, 0.6); /* Darker, semi-transparent for glass */
@@ -143,10 +144,24 @@
             border: 1px solid var(--input-border-color);
             font-size: 1rem;
             background-color: var(--input-bg);
-            color: var(--text-light-primary);
+            color: var(--text-light-primary); /* This styles the selected value in the closed select box */
             transition: border-color var(--transition-fast), box-shadow var(--transition-fast), background-color var(--transition-fast);
             font-family: var(--font-secondary);
         }
+
+        /* ----- FIX FOR DROPDOWN OPTIONS VISIBILITY ----- */
+        select option {
+            background-color: #fff; /* Or your preferred light background for dropdown items */
+            color: var(--text-dark-primary, #2c3e50); /* Ensure dark text for readability */
+        }
+        /* In some browsers, you might need to target the select element when it's focused/active */
+        select:focus option {
+             background-color: #fff; /* Reiterate if needed */
+             color: var(--text-dark-primary, #2c3e50);
+        }
+        /* ----------------------------------------------- */
+
+
         input::placeholder, textarea::placeholder {
             color: var(--input-placeholder-color);
             opacity: 1;
@@ -259,7 +274,7 @@
             min-width: 180px;
             font-weight: 600;
             padding: 0.8rem 1rem;
-            /* Inherits input styling, which is good */
+            /* Inherits input styling, which is good for the closed state */
         }
          #mealReviews label[for="mealToggle"] { /* Specific label styling */
             text-align: center;
