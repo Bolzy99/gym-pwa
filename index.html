@@ -291,6 +291,39 @@
             line-height: 1.7;
         }
 
+        /* Message Display */
+        #messageDisplay {
+            margin-top: 1.5rem;
+            padding: 1rem 1.5rem;
+            border-radius: var(--border-radius-md);
+            font-weight: 600;
+            text-align: center;
+            opacity: 0;
+            transform: translateY(10px);
+            transition: opacity 0.3s ease-out, transform 0.3s ease-out, background-color 0.3s ease-out;
+            max-width: 480px;
+            width: 100%;
+            box-shadow: var(--shadow-sm);
+        }
+
+        #messageDisplay.success {
+            background-color: rgba(var(--primary-green-rgb), 0.2);
+            color: var(--primary-green);
+            border: 1px solid rgba(var(--primary-green-rgb), 0.4);
+        }
+
+        #messageDisplay.error {
+            background-color: rgba(231, 76, 60, 0.2); /* #e74c3c with alpha */
+            color: #e74c3c;
+            border: 1px solid rgba(231, 76, 60, 0.4);
+        }
+
+        #messageDisplay.show {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+
         /* Visibility control classes (optional, for JS-driven transitions) */
         /* ... (keyframes remain the same) ... */
         .view-hidden { display: none; opacity: 0; }
@@ -351,7 +384,7 @@
 <body>
     <h1>🏋️ Gym Tracker Pro</h1>
     <div id="motivational-quote">
-        </div>
+    </div>
 
     <div id="loginView" class="glass-container">
         <h2>Login to Your Dashboard</h2>
@@ -379,6 +412,7 @@
             <textarea id="calorie" placeholder="e.g., Breakfast: 2 bananas + 1 egg. Lunch: Dal, roti, salad." style="display:none;"></textarea>
 
             <button type="submit">Submit Log</button>
+            <div id="messageDisplay" class="message-display"></div> <!-- Message display area -->
         </form>
 
         <div id="adminPanel" class="admin-panel glass-container" style="display:none;">
@@ -393,7 +427,7 @@
         <div id="memberPanel" class="member-panel glass-container" style="display:none;">
             <h3>👤 Member Features</h3>
             <ul>
-                 <li><button id="attendanceAnalyticsButtonMember">📊 My Attendance</button></li>
+                <li><button id="attendanceAnalyticsButtonMember">📊 Attendance Analytics</button></li>
             </ul>
         </div>
 
@@ -420,6 +454,9 @@
             { name: "Pankaj Dhama", phone: "919716986669" },
         ];
 
+        // Global variable for message timeout to clear it
+        let messageTimeoutId;
+
         // On page load
         window.onload = () => {
             const user = JSON.parse(localStorage.getItem("gymUser"));
@@ -429,11 +466,13 @@
 
             document.getElementById('loginButton').addEventListener('click', loginUser);
 
+            // Change to open in same tab
             document.getElementById('attendanceAnalyticsButton')?.addEventListener('click', () => {
-                window.open('busiest.html', '_blank');
+                window.location.href = 'busiest.html';
             });
+            // Change to open in same tab
             document.getElementById('attendanceAnalyticsButtonMember')?.addEventListener('click', () => {
-                window.open('busiest.html', '_blank');
+                window.location.href = 'busiest.html';
             });
 
             document.getElementById('mealToggle').addEventListener('change', fetchMealReviews);
@@ -444,13 +483,14 @@
         const typeField = document.getElementById('type');
         const calorieField = document.getElementById('calorie');
         const calorieLabel = document.getElementById('calorieLabel');
+        const messageDisplay = document.getElementById('messageDisplay'); // Get the message display element
 
         typeField.addEventListener('change', () => {
             const isCalorie = typeField.value === 'calorie';
             calorieField.style.display = isCalorie ? 'block' : 'none';
             calorieLabel.style.display = isCalorie ? 'block' : 'none';
             if (isCalorie) {
-                 calorieField.focus();
+                calorieField.focus();
             } else {
                 calorieField.value = '';
             }
@@ -466,6 +506,7 @@
                 name: document.getElementById('name').value,
                 phone: document.getElementById('phone').value,
                 type: typeField.value,
+                workoutType: typeField.value, // Added for consistency with your webhook input
                 calorie: calorieField.value
             };
 
@@ -476,19 +517,52 @@
                     body: JSON.stringify(data)
                 });
                 const resData = await response.json();
+                
+                // Display custom message based on webhook response
                 if (resData.success) {
-                    alert("Form submitted successfully!");
+                    displayMessage(resData.message, true); // True for success
                     if (typeField.value === 'calorie') calorieField.value = '';
                 } else {
-                    alert("Submission failed: " + (resData.message || "Unknown error"));
+                    displayMessage(resData.message || "Unknown error during submission.", false); // False for error
                 }
             } catch (err) {
-                alert("Error submitting form: " + err.message);
+                displayMessage("Error submitting form: " + err.message, false); // False for error
             } finally {
                 submitButton.textContent = 'Submit Log';
                 submitButton.disabled = false;
             }
         });
+
+        /**
+         * Displays a message to the user with appropriate styling and clears it after a delay.
+         * @param {string} message - The message text to display.
+         * @param {boolean} isSuccess - True if it's a success message, false for an error message.
+         */
+        function displayMessage(message, isSuccess) {
+            // Clear any existing timeout to prevent messages from overlapping or clearing too soon
+            clearTimeout(messageTimeoutId);
+
+            messageDisplay.textContent = message;
+            messageDisplay.className = 'message-display show'; // Reset classes and show
+            if (isSuccess) {
+                messageDisplay.classList.add('success');
+                messageDisplay.classList.remove('error');
+            } else {
+                messageDisplay.classList.add('error');
+                messageDisplay.classList.remove('success');
+            }
+
+            // Set a timeout to hide the message after 5 seconds
+            messageTimeoutId = setTimeout(() => {
+                messageDisplay.classList.remove('show');
+                // Optional: clear text and classes after fade out to keep DOM clean
+                setTimeout(() => {
+                    messageDisplay.textContent = '';
+                    messageDisplay.className = 'message-display';
+                }, 300); // Match fade-out transition duration
+            }, 5000);
+        }
+
 
         async function loginUser() {
             const nameInput = document.getElementById('loginName');
@@ -499,7 +573,7 @@
             const phone = phoneInput.value.trim();
 
             if (!name || !phone) {
-                alert('Please enter both name and phone number.');
+                displayMessage('Please enter both name and phone number.', false); // Use custom message display
                 return;
             }
 
@@ -529,11 +603,11 @@
                     localStorage.setItem('gymUser', JSON.stringify(user));
                     showDashboard(user);
                 } else {
-                    alert('No matching member found. Please check your details or contact admin.');
+                    displayMessage('No matching member found. Please check your details or contact admin.', false); // Use custom message display
                     nameInput.focus();
                 }
             } catch (err) {
-                alert('Error during login: ' + err.message);
+                displayMessage('Error during login: ' + err.message, false); // Use custom message display
             } finally {
                 loginButton.textContent = 'Access Dashboard';
                 loginButton.disabled = false;
@@ -555,14 +629,14 @@
             if (user.role === 'admin') {
                 adminPanel.style.display = 'block';
                 memberPanel.style.display = 'none';
-                expiryDashboard.style.display = 'block';
+                expiryDashboard.style.display = 'block'; // Admin sees expiry dashboard
                 mealReviews.style.display = 'block';
                 loadExpiryData();
                 fetchMealReviews();
             } else {
                 adminPanel.style.display = 'none';
                 memberPanel.style.display = 'block';
-                expiryDashboard.style.display = 'none';
+                expiryDashboard.style.display = 'none'; // Member does NOT see expiry dashboard
                 mealReviews.style.display = 'block';
                 fetchMealReviews();
             }
