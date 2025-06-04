@@ -122,7 +122,7 @@
         const rawData = await res.json();
 
         const attendanceData = rawData.attendance || rawData;
-        const liveVisitors = rawData.liveVisitors || [];
+        const liveVisitors = rawData.liveVisitors || []; // This will now contain names of live visitors
 
         const filtered = Object.entries(attendanceData).filter(([hour, count]) => count > 0);
         const labels = filtered.map(([hour]) => hour);
@@ -136,9 +136,8 @@
         const busiestIndex = values.indexOf(Math.max(...values));
         const freestIndex = values.indexOf(Math.min(...values));
 
-        const now = new Date();
-        const currentHour = now.getHours();
-        const currentAttendance = attendanceData[`${currentHour.toString().padStart(2, '0')}:00`] || 0;
+        // The 'Currently in Gym' count will now come directly from liveVisitors.length
+        const currentAttendance = liveVisitors.length;
 
         const summaryText = `
           🏆 Busiest Hour: <strong>${labels[busiestIndex]}</strong> with <strong>${values[busiestIndex]}</strong> people.<br>
