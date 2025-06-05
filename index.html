@@ -466,17 +466,17 @@
 
             document.getElementById('loginButton').addEventListener('click', loginUser);
 
-            // Change to open in same tab
+            // Change to open in same tab, passing role
             document.getElementById('attendanceAnalyticsButton')?.addEventListener('click', () => {
-		const user = JSON.parse(localStorage.getItem('gymUser'));
-        	const role = user ? user.role : 'member'; // Default to member if not logged in
-                window.location.href = 'busiest.html?role=${role}';
+                const user = JSON.parse(localStorage.getItem('gymUser'));
+                const role = user ? user.role : 'member'; // Default to member if not logged in
+                window.location.href = `busiest.html?role=${role}`;
             });
-            // Change to open in same tab
+            // Change to open in same tab, passing role
             document.getElementById('attendanceAnalyticsButtonMember')?.addEventListener('click', () => {
-		const user = JSON.parse(localStorage.getItem('gymUser'));
-        	const role = user ? user.role : 'member'; // Default to member if not logged in
-                window.location.href = 'busiest.html?role=${role}';
+                const user = JSON.parse(localStorage.getItem('gymUser'));
+                const role = user ? user.role : 'member'; // Default to member if not logged in
+                window.location.href = `busiest.html?role=${role}`;
             });
 
             document.getElementById('mealToggle').addEventListener('change', fetchMealReviews);
@@ -706,7 +706,7 @@
         const quotes = [
             "The only bad workout is the one that didn’t happen. Keep pushing! 💪",
             "Your body can stand almost anything. It’s your mind you have to convince. 🔥",
-            "Sweat is just fat crying. Let it pour! 💧",
+            "Sweat is just fat crying. Let it pour!  ",
             "Don't limit your challenges. Challenge your limits, every single day. ⛰️",
             "Success isn't given. It's earned. On the track, on the field, in the gym. With blood, sweat, and the occasional tear. ✨"
         ];
