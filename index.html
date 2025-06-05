@@ -27,7 +27,7 @@
             --text-light-muted: rgba(236, 240, 241, 0.75);
             --text-dark-primary: #2c3e50; /* Dark text for light backgrounds */
 
-            /* Backgrounds */ & Borders for Glassmorphism */
+            /* Backgrounds & Borders for Glassmorphism */
             --container-bg: rgba(35, 35, 45, 0.6);
             --container-bg-hover: rgba(45, 45, 55, 0.75); /* Used in @media hover */
             --container-border-color: rgba(255, 255, 255, 0.1);
@@ -243,19 +243,19 @@
              padding: 1rem 0;
         }
 
-        #mealToggle {
-            margin: 0 auto 1.5rem;
-            display: block;
-            width: auto;
-            min-width: 180px;
-            font-weight: 600;
+        /* Adjust button group for meal review buttons */
+        .meal-review-buttons {
+            display: flex;
+            gap: 10px; /* Space between buttons */
+            margin-bottom: 1.5rem;
+        }
+        .meal-review-buttons button {
+            flex: 1; /* Distribute space equally */
             padding: 0.8rem 1rem;
-        }
-         #mealReviews label[for="mealToggle"] {
-            text-align: center;
-            margin-bottom: 0.5rem;
             font-size: 1rem;
+            /* Override general button styles if needed, or ensure they inherit well */
         }
+
 
         #mealReviews textarea#mealReviewText, #myDailyMealLogsContent {
             width: 100%;
@@ -456,12 +456,13 @@
 
         <div id="mealReviews" class="glass-container" style="display:none;">
             <h3>🥗 Meal Reviews (Admin/General)</h3>
-            <label for="mealToggle">View Period:</label>
-            <select id="mealToggle">
-                <option value="daily">Daily</option>
-                <option value="weekly">Weekly</option>
-            </select>
-            <textarea id="mealReviewText" readonly>Loading meal reviews...</textarea>
+            <div class="meal-review-buttons">
+                <button type="button" id="viewDailySummaryButton" style="background: linear-gradient(145deg, #20c997, #17a2b8);">View Daily Summary</button>
+                <button type="button" id="viewWeeklySummaryButton" style="background: linear-gradient(145deg, #ffc107, #d39e00);">View Weekly Summary</button>
+            </div>
+            <div id="mealReviewContent" style="min-height: 150px; text-align: left; background: var(--input-bg); border-radius: var(--border-radius-md); border: 1px solid var(--input-border-color); padding: 1rem; color: var(--text-light-primary); box-shadow: inset 0 1px 4px rgba(0,0,0,0.2); white-space: pre-wrap; overflow-y: auto;">
+                Select a period above to generate a review.
+            </div>
         </div>
     </div>
 
@@ -497,7 +498,10 @@
                 window.location.href = `busiest.html?role=${role}`;
             });
 
-            document.getElementById('mealToggle').addEventListener('change', fetchMealReviews);
+            // Replaced mealToggle change listener with button listeners
+            document.getElementById('viewDailySummaryButton').addEventListener('click', () => fetchMealReviewSummary('daily'));
+            document.getElementById('viewWeeklySummaryButton').addEventListener('click', () => fetchMealReviewSummary('weekly'));
+
             document.getElementById('motivational-quote').textContent = getDailyQuote();
         };
 
@@ -515,7 +519,7 @@
             const isCalorie = typeField.value === 'calorie';
             calorieField.style.display = isCalorie ? 'block' : 'none';
             calorieLabel.style.display = isCalorie ? 'block' : 'none';
-            generateDailyReviewButton.style.display = isCalorie ? 'block' : 'none'; // Show/hide review button
+            generateDailyReviewButton.style.display = isCalorie ? 'block' : 'none'; // Show/hide generate review button
             
             // Manage visibility of the entire "My Daily Meal Logs" section and its button
             if (isCalorie) {
@@ -800,25 +804,25 @@
                 expiryDashboard.style.display = 'block'; // Admin sees expiry dashboard
                 mealReviews.style.display = 'block'; // Admin sees general meal reviews
                 
-                // For admin, initially hide logs section, show the button
+                // For admin, initially hide personal logs section, show the button
                 myDailyMealLogsSection.style.display = 'none';
                 viewDailyMealLogsButton.style.display = 'block'; // Show the button for admin
                 myDailyMealLogsContent.innerHTML = 'Click "View My Daily Meal Logs" to load.'; // Prompt message
 
                 loadExpiryData();
-                fetchMealReviews();
+                // fetchMealReviews(); // No longer auto-load, user clicks button
             } else {
                 adminPanel.style.display = 'none';
                 memberPanel.style.display = 'block';
                 expiryDashboard.style.display = 'none'; // Member does NOT see expiry dashboard
                 mealReviews.style.display = 'block'; // Member sees general meal reviews (if any)
                 
-                // For member, initially hide logs section, show the button
+                // For member, initially hide personal logs section, show the button
                 myDailyMealLogsSection.style.display = 'none';
                 viewDailyMealLogsButton.style.display = 'block'; // Show the button for member
                 myDailyMealLogsContent.innerHTML = 'Click "View My Daily Meal Logs" to load.'; // Prompt message
 
-                fetchMealReviews();
+                // fetchMealReviews(); // No longer auto-load, user clicks button
             }
             // Initially hide the generateDailyReviewButton if type is not calorie
             generateDailyReviewButton.style.display = typeField.value === 'calorie' ? 'block' : 'none';
@@ -856,28 +860,50 @@
             }
         }
 
-        async function fetchMealReviews() {
-            const toggle = document.getElementById('mealToggle').value;
-            const reviewText = document.getElementById('mealReviewText');
-            reviewText.value = 'Loading ' + toggle + ' meal reviews...';
+        // Renamed and modified from fetchMealReviews
+        async function fetchMealReviewSummary(period) {
+            const mealReviewContent = document.getElementById('mealReviewContent');
+            const user = JSON.parse(localStorage.getItem("gymUser"));
+            if (!user) {
+                mealReviewContent.innerHTML = 'Please log in to view meal reviews.';
+                displayMessage("Please log in to view meal reviews.", false);
+                return;
+            }
+
+            mealReviewContent.innerHTML = `Loading ${period} meal review...`;
+            displayMessage(`Generating ${period} meal review...`, true); // Provide immediate feedback
 
             const endpointMap = {
-                daily: 'https://suitable-rapidly-terrier.ngrok-free.app/webhook-test/get-daily-meal-reviews',
-                weekly: 'https://suitable-rapidly-terrier.ngrok-free.app/webhook-test/get-weekly-meal-reviews'
+                daily: 'https://suitable-rapidly-terrier.ngrok-free.app/webhook-test/get-daily-meal-reviews', // Your n8n workflow for daily summary
+                weekly: 'https://suitable-rapidly-terrier.ngrok-free.app/webhook-test/get-weekly-meal-reviews' // Placeholder for weekly summary
             };
 
+            const endpoint = endpointMap[period];
+            if (!endpoint) {
+                mealReviewContent.innerHTML = 'Invalid review period selected.';
+                displayMessage('Invalid review period selected.', false);
+                return;
+            }
+
             try {
-                const response = await fetch(endpointMap[toggle], {
-                    method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({})
+                const response = await fetch(endpoint, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ name: user.name, phone: user.phone, period: period }) // Pass user info and period
                 });
                 const data = await response.json();
-                if (!data || !data.reviews || data.reviews.length === 0) {
-                    reviewText.value = 'No reviews available for this period.';
-                    return;
+
+                if (data.success && data.message) {
+                    mealReviewContent.innerHTML = data.message;
+                    displayMessage(`Successfully generated ${period} meal review.`, true);
+                } else {
+                    mealReviewContent.innerHTML = `No ${period} review available. ` + (data.message || "");
+                    displayMessage(`Failed to generate ${period} meal review: ` + (data.message || ""), false);
                 }
-                reviewText.value = data.reviews.join('\n\n—\n\n');
             } catch (err) {
-                reviewText.value = 'Error loading reviews: ' + err.message;
+                mealReviewContent.innerHTML = `Error loading ${period} review: ` + err.message;
+                displayMessage(`Error generating ${period} meal review: ` + err.message, false);
+                console.error(`Error fetching ${period} meal review:`, err);
             }
         }
 
