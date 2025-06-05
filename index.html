@@ -204,12 +204,12 @@
             background: linear-gradient(145deg, var(--accent-blue-darker), #004a99); /* Slightly darker on active */
         }
 
-        #expiryDashboard, #mealReviews {
+        #expiryDashboard, #mealReviews, #myDailyMealLogsSection {
             max-width: 650px;
             padding: 2rem;
             border-left: 5px solid var(--primary-green);
         }
-        #expiryDashboard h3, #mealReviews h3 {
+        #expiryDashboard h3, #mealReviews h3, #myDailyMealLogsSection h3 {
             color: var(--primary-green);
             font-size: 1.6em;
             text-align: left;
@@ -257,9 +257,9 @@
             font-size: 1rem;
         }
 
-        #mealReviews textarea#mealReviewText {
+        #mealReviews textarea#mealReviewText, #myDailyMealLogsContent {
             width: 100%;
-            height: 150px;
+            min-height: 150px; /* Adjusted min-height for content areas */
             margin-top: 0.5rem;
             resize: vertical;
             font-family: var(--font-secondary);
@@ -271,7 +271,13 @@
             box-shadow: inset 0 1px 4px rgba(0,0,0,0.2);
             font-size: 1rem;
             line-height: 1.6;
+            white-space: pre-wrap; /* To preserve newlines for AI output */
+            overflow-y: auto; /* Enable scrolling if content overflows */
         }
+        #myDailyMealLogsContent {
+            height: auto; /* Allow content to dictate height */
+        }
+
 
         #motivational-quote {
             background: rgba(0, 0, 0, 0.25);
@@ -412,8 +418,19 @@
             <textarea id="calorie" placeholder="e.g., Breakfast: 2 bananas + 1 egg. Lunch: Dal, roti, salad." style="display:none;"></textarea>
 
             <button type="submit">Submit Log</button>
-            <div id="messageDisplay" class="message-display"></div> <!-- Message display area -->
+            <div id="messageDisplay" class="message-display"></div> <!-- Message display area for general messages -->
+            
+            <button type="button" id="generateDailyReviewButton" style="margin-top: 1.5rem; background: linear-gradient(145deg, #007bff, #0056b3);">Generate My Daily Review</button>
+
         </form>
+
+        <div id="myDailyMealLogsSection" class="glass-container" style="display:none;">
+            <h3>My Daily Meal Logs</h3>
+            <div id="myDailyMealLogsContent">
+                <!-- Individual calorie logs will be appended here -->
+                No logs yet today.
+            </div>
+        </div>
 
         <div id="adminPanel" class="admin-panel glass-container" style="display:none;">
             <h3>🔑 Admin Panel</h3>
@@ -437,7 +454,7 @@
         </div>
 
         <div id="mealReviews" class="glass-container" style="display:none;">
-            <h3>🥗 Meal Reviews</h3>
+            <h3>🥗 Meal Reviews (Admin/General)</h3>
             <label for="mealToggle">View Period:</label>
             <select id="mealToggle">
                 <option value="daily">Daily</option>
@@ -488,11 +505,23 @@
         const calorieField = document.getElementById('calorie');
         const calorieLabel = document.getElementById('calorieLabel');
         const messageDisplay = document.getElementById('messageDisplay'); // Get the message display element
+        const myDailyMealLogsContent = document.getElementById('myDailyMealLogsContent');
+        const generateDailyReviewButton = document.getElementById('generateDailyReviewButton');
 
         typeField.addEventListener('change', () => {
             const isCalorie = typeField.value === 'calorie';
             calorieField.style.display = isCalorie ? 'block' : 'none';
             calorieLabel.style.display = isCalorie ? 'block' : 'none';
+            generateDailyReviewButton.style.display = isCalorie ? 'block' : 'none'; // Show/hide review button
+            // If switching away from calorie, clear and hide personal logs
+            if (!isCalorie) {
+                document.getElementById('myDailyMealLogsSection').style.display = 'none';
+                myDailyMealLogsContent.innerHTML = 'No logs yet today.';
+            } else {
+                document.getElementById('myDailyMealLogsSection').style.display = 'block';
+                loadMyDailyMealLogs(); // Load logs when calorie is selected
+            }
+
             if (isCalorie) {
                 calorieField.focus();
             } else {
@@ -507,26 +536,48 @@
             submitButton.disabled = true;
 
             const logType = typeField.value;
-            let responseData; // Declare a variable to hold the response data
+            let responseData;
+            const user = JSON.parse(localStorage.getItem("gymUser")); // Get current user
 
             try {
                 if (logType === 'calorie') {
-                    // Send calorie log to the AI webhook
-                    const calorieResponse = await fetch('https://suitable-rapidly-terrier.ngrok-free.app/webhook-test/calorie-log-ai', {
+                    if (!calorieField.value.trim()) {
+                        displayMessage("Please enter a calorie description.", false);
+                        return;
+                    }
+                    // Send calorie log to the AI webhook for processing and saving
+                    const calorieLogData = {
+                        name: user.name,
+                        phone: user.phone,
+                        calorie: calorieField.value
+                    };
+                    const calorieResponse = await fetch('https://suitable-rapidly-terrier.ngrok-free.app/webhook-test/calorie-log-process', {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ calorie: calorieField.value })
+                        body: JSON.stringify(calorieLogData)
                     });
                     responseData = await calorieResponse.json();
-                    calorieField.value = ''; // Clear calorie description after submission
+                    
+                    if (responseData.success) {
+                        // Append AI's response to the personal logs area
+                        const logEntry = document.createElement('div');
+                        logEntry.innerHTML = `<p><strong>${new Date().toLocaleTimeString()} Log:</strong><br>${responseData.message}</p><hr style="border-top: 1px solid rgba(255,255,255,0.1); margin: 10px 0;">`;
+                        myDailyMealLogsContent.prepend(logEntry); // Add to top of the list
+
+                        calorieField.value = ''; // Clear calorie description after submission
+                        displayMessage("Calorie log submitted and processed!", true);
+                    } else {
+                        displayMessage(responseData.message || "Error processing calorie log.", false);
+                    }
+
                 } else {
                     // Existing attendance/other log submission logic
                     const data = {
                         name: document.getElementById('name').value,
                         phone: document.getElementById('phone').value,
                         type: logType,
-                        workoutType: logType, // Added for consistency with your webhook input
-                        calorie: calorieField.value // Although not used for attendance, keeping for consistency if webhook uses it
+                        workoutType: logType,
+                        calorie: calorieField.value 
                     };
                     const response = await fetch('https://suitable-rapidly-terrier.ngrok-free.app/webhook-test/gym-log', {
                         method: 'POST',
@@ -534,21 +585,100 @@
                         body: JSON.stringify(data)
                     });
                     responseData = await response.json();
-                }
-                
-                // Display custom message based on webhook response
-                if (responseData.success) {
-                    displayMessage(responseData.message, true); // True for success
-                } else {
-                    displayMessage(responseData.message || "Unknown error during submission.", false); // False for error
+                    
+                    // Display custom message based on webhook response for attendance
+                    if (responseData.success) {
+                        displayMessage(responseData.message, true);
+                    } else {
+                        displayMessage(responseData.message || "Unknown error during submission.", false);
+                    }
                 }
             } catch (err) {
-                displayMessage("Error submitting form: " + err.message, false); // False for error
+                displayMessage("Error submitting form: " + err.message, false);
+                console.error("Submission error:", err); // Log error for debugging
             } finally {
                 submitButton.textContent = 'Submit Log';
                 submitButton.disabled = false;
             }
         });
+
+        // Event listener for Generate My Daily Review button
+        generateDailyReviewButton.addEventListener('click', async () => {
+            const button = generateDailyReviewButton;
+            button.textContent = 'Generating...';
+            button.disabled = true;
+
+            const user = JSON.parse(localStorage.getItem("gymUser"));
+            if (!user) {
+                displayMessage("Please log in to generate a daily review.", false);
+                button.textContent = 'Generate My Daily Review';
+                button.disabled = false;
+                return;
+            }
+
+            try {
+                myDailyMealLogsContent.innerHTML = 'Generating daily review...'; // Show loading state
+                const response = await fetch('https://suitable-rapidly-terrier.ngrok-free.app/webhook-test/generate-personal-daily-review', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ name: user.name, phone: user.phone })
+                });
+                const data = await response.json();
+
+                if (data.success && data.message) {
+                    myDailyMealLogsContent.innerHTML = `<strong>Today's Review:</strong><br><br>${data.message}`;
+                    displayMessage("Daily review generated!", true);
+                } else {
+                    myDailyMealLogsContent.innerHTML = "Could not generate daily review. " + (data.message || "");
+                    displayMessage(data.message || "Failed to generate daily review.", false);
+                }
+            } catch (err) {
+                myDailyMealLogsContent.innerHTML = "Error generating daily review: " + err.message;
+                displayMessage("Error generating daily review: " + err.message, false);
+                console.error("Daily review generation error:", err);
+            } finally {
+                button.textContent = 'Generate My Daily Review';
+                button.disabled = false;
+            }
+        });
+
+        /**
+         * Loads and displays the user's daily meal logs.
+         */
+        async function loadMyDailyMealLogs() {
+            const user = JSON.parse(localStorage.getItem("gymUser"));
+            if (!user) {
+                myDailyMealLogsContent.innerHTML = 'Please log in to view your meal logs.';
+                return;
+            }
+            
+            myDailyMealLogsContent.innerHTML = 'Loading your daily meal logs...';
+
+            try {
+                const response = await fetch('https://suitable-rapidly-terrier.ngrok-free.app/webhook-test/get-my-daily-calorie-logs', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ name: user.name, phone: user.phone })
+                });
+                const data = await response.json();
+
+                if (data.success && Array.isArray(data.logs) && data.logs.length > 0) {
+                    myDailyMealLogsContent.innerHTML = ''; // Clear existing content
+                    data.logs.sort((a, b) => new Date(a.timestamp) - new Date(b.timestamp)); // Sort by timestamp
+                    data.logs.forEach(log => {
+                        const logEntry = document.createElement('div');
+                        logEntry.innerHTML = `<p><strong>${new Date(log.timestamp).toLocaleTimeString()} Log:</strong><br>${log.aiResponse}</p><hr style="border-top: 1px solid rgba(255,255,255,0.1); margin: 10px 0;">`;
+                        myDailyMealLogsContent.appendChild(logEntry);
+                    });
+                } else {
+                    myDailyMealLogsContent.innerHTML = 'No meal logs found for today.';
+                }
+            } catch (err) {
+                myDailyMealLogsContent.innerHTML = 'Error loading your meal logs: ' + err.message;
+                console.error("Error loading personal meal logs:", err);
+            }
+        }
+
 
         /**
          * Displays a message to the user with appropriate styling and clears it after a delay.
@@ -642,21 +772,30 @@
             const memberPanel = document.getElementById('memberPanel');
             const expiryDashboard = document.getElementById('expiryDashboard');
             const mealReviews = document.getElementById('mealReviews');
+            const myDailyMealLogsSection = document.getElementById('myDailyMealLogsSection'); // Get the new section
 
             if (user.role === 'admin') {
                 adminPanel.style.display = 'block';
                 memberPanel.style.display = 'none';
                 expiryDashboard.style.display = 'block'; // Admin sees expiry dashboard
-                mealReviews.style.display = 'block';
+                mealReviews.style.display = 'block'; // Admin sees general meal reviews
+                myDailyMealLogsSection.style.display = 'block'; // Admin sees personal logs too
+
                 loadExpiryData();
                 fetchMealReviews();
+                loadMyDailyMealLogs(); // Load personal logs for admin too
             } else {
                 adminPanel.style.display = 'none';
                 memberPanel.style.display = 'block';
                 expiryDashboard.style.display = 'none'; // Member does NOT see expiry dashboard
-                mealReviews.style.display = 'block';
+                mealReviews.style.display = 'block'; // Member sees general meal reviews (if any)
+                myDailyMealLogsSection.style.display = 'block'; // Member sees their personal logs
+
                 fetchMealReviews();
+                loadMyDailyMealLogs(); // Load personal logs for member
             }
+            // Initially hide the generateDailyReviewButton if type is not calorie
+            generateDailyReviewButton.style.display = typeField.value === 'calorie' ? 'block' : 'none';
         }
 
         async function loadExpiryData() {
