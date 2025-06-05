@@ -468,11 +468,15 @@
 
             // Change to open in same tab
             document.getElementById('attendanceAnalyticsButton')?.addEventListener('click', () => {
-                window.location.href = 'busiest.html';
+		const user = JSON.parse(localStorage.getItem('gymUser'));
+        	const role = user ? user.role : 'member'; // Default to member if not logged in
+                window.location.href = 'busiest.html?role=${role}';
             });
             // Change to open in same tab
             document.getElementById('attendanceAnalyticsButtonMember')?.addEventListener('click', () => {
-                window.location.href = 'busiest.html';
+		const user = JSON.parse(localStorage.getItem('gymUser'));
+        	const role = user ? user.role : 'member'; // Default to member if not logged in
+                window.location.href = 'busiest.html?role=${role}';
             });
 
             document.getElementById('mealToggle').addEventListener('change', fetchMealReviews);
