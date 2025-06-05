@@ -27,7 +27,7 @@
             --text-light-muted: rgba(236, 240, 241, 0.75);
             --text-dark-primary: #2c3e50; /* Dark text for light backgrounds */
 
-            /* Backgrounds & Borders for Glassmorphism */
+            /* Backgrounds */ & Borders for Glassmorphism */
             --container-bg: rgba(35, 35, 45, 0.6);
             --container-bg-hover: rgba(45, 45, 55, 0.75); /* Used in @media hover */
             --container-border-color: rgba(255, 255, 255, 0.1);
@@ -420,7 +420,7 @@
             <button type="submit">Submit Log</button>
             <div id="messageDisplay" class="message-display"></div> <!-- Message display area for general messages -->
             
-            <button type="button" id="generateDailyReviewButton" style="margin-top: 1.5rem; background: linear-gradient(145deg, #007bff, #0056b3);">Generate My Daily Review</button>
+            <button type="button" id="generateDailyReviewButton" style="margin-top: 1.5rem; background: linear-gradient(145deg, #007bff, #0056b3); display: none;">Generate My Daily Review</button>
 
         </form>
 
@@ -430,6 +430,7 @@
                 <!-- Individual calorie logs will be appended here -->
                 No logs yet today.
             </div>
+            <button type="button" id="viewDailyMealLogsButton" style="margin-top: 1.5rem; background: linear-gradient(145deg, #20c997, #17a2b8);">View My Daily Meal Logs</button>
         </div>
 
         <div id="adminPanel" class="admin-panel glass-container" style="display:none;">
@@ -506,20 +507,25 @@
         const calorieLabel = document.getElementById('calorieLabel');
         const messageDisplay = document.getElementById('messageDisplay'); // Get the message display element
         const myDailyMealLogsContent = document.getElementById('myDailyMealLogsContent');
+        const myDailyMealLogsSection = document.getElementById('myDailyMealLogsSection'); // Get the new section
         const generateDailyReviewButton = document.getElementById('generateDailyReviewButton');
+        const viewDailyMealLogsButton = document.getElementById('viewDailyMealLogsButton'); // New button
 
         typeField.addEventListener('change', () => {
             const isCalorie = typeField.value === 'calorie';
             calorieField.style.display = isCalorie ? 'block' : 'none';
             calorieLabel.style.display = isCalorie ? 'block' : 'none';
             generateDailyReviewButton.style.display = isCalorie ? 'block' : 'none'; // Show/hide review button
-            // If switching away from calorie, clear and hide personal logs
-            if (!isCalorie) {
-                document.getElementById('myDailyMealLogsSection').style.display = 'none';
-                myDailyMealLogsContent.innerHTML = 'No logs yet today.';
+            
+            // Manage visibility of the entire "My Daily Meal Logs" section and its button
+            if (isCalorie) {
+                myDailyMealLogsSection.style.display = 'block'; // Make the section itself visible
+                viewDailyMealLogsButton.style.display = 'block'; // Ensure the button inside is also visible
+                myDailyMealLogsContent.innerHTML = 'Click "View My Daily Meal Logs" to load.'; // Prompt message
             } else {
-                document.getElementById('myDailyMealLogsSection').style.display = 'block';
-                loadMyDailyMealLogs(); // Load logs when calorie is selected
+                myDailyMealLogsSection.style.display = 'none'; // Hide the section
+                viewDailyMealLogsButton.style.display = 'none'; // Hide the button
+                myDailyMealLogsContent.innerHTML = 'No logs yet today.'; // Reset content
             }
 
             if (isCalorie) {
@@ -528,6 +534,14 @@
                 calorieField.value = '';
             }
         });
+
+        // New event listener for the "View My Daily Meal Logs" button
+        viewDailyMealLogsButton.addEventListener('click', () => {
+            // myDailyMealLogsSection.style.display is already 'block' if this button is visible
+            loadMyDailyMealLogs(); // Load the logs
+            // Optional: viewDailyMealLogsButton.style.display = 'none'; // Hide the button after click if you don't want it to stay
+        });
+
 
         form.addEventListener('submit', async (e) => {
             e.preventDefault();
@@ -559,10 +573,16 @@
                     responseData = await calorieResponse.json();
                     
                     if (responseData.success) {
-                        // Append AI's response to the personal logs area
-                        const logEntry = document.createElement('div');
-                        logEntry.innerHTML = `<p><strong>${new Date().toLocaleTimeString()} Log:</strong><br>${responseData.message}</p><hr style="border-top: 1px solid rgba(255,255,255,0.1); margin: 10px 0;">`;
-                        myDailyMealLogsContent.prepend(logEntry); // Add to top of the list
+                        // Append AI's response to the personal logs area if section is visible
+                        if (myDailyMealLogsSection.style.display === 'block') {
+                            const logEntry = document.createElement('div');
+                            logEntry.innerHTML = `<p><strong>${new Date().toLocaleTimeString()} Log:</strong><br>${responseData.message}</p><hr style="border-top: 1px solid rgba(255,255,255,0.1); margin: 10px 0;">`;
+                            myDailyMealLogsContent.prepend(logEntry); // Add to top of the list
+                        } else {
+                            // If section is hidden, just update the prompt text
+                             myDailyMealLogsContent.innerHTML = 'Logs updated. Click "View My Daily Meal Logs" to see.';
+                             viewDailyMealLogsButton.style.display = 'block'; // Make button visible if not already
+                        }
 
                         calorieField.value = ''; // Clear calorie description after submission
                         displayMessage("Calorie log submitted and processed!", true);
@@ -652,7 +672,7 @@
                 return;
             }
             
-            myDailyMealLogsContent.innerHTML = 'Loading your daily meal logs...';
+            myDailyMealLogsContent.innerHTML = 'Loading your daily meal logs...'; // Show loading state when button is clicked
 
             try {
                 const response = await fetch('https://suitable-rapidly-terrier.ngrok-free.app/webhook-test/get-my-daily-calorie-logs', {
@@ -772,27 +792,33 @@
             const memberPanel = document.getElementById('memberPanel');
             const expiryDashboard = document.getElementById('expiryDashboard');
             const mealReviews = document.getElementById('mealReviews');
-            const myDailyMealLogsSection = document.getElementById('myDailyMealLogsSection'); // Get the new section
+            // myDailyMealLogsSection and viewDailyMealLogsButton are already globally defined
 
             if (user.role === 'admin') {
                 adminPanel.style.display = 'block';
                 memberPanel.style.display = 'none';
                 expiryDashboard.style.display = 'block'; // Admin sees expiry dashboard
                 mealReviews.style.display = 'block'; // Admin sees general meal reviews
-                myDailyMealLogsSection.style.display = 'block'; // Admin sees personal logs too
+                
+                // For admin, initially hide logs section, show the button
+                myDailyMealLogsSection.style.display = 'none';
+                viewDailyMealLogsButton.style.display = 'block'; // Show the button for admin
+                myDailyMealLogsContent.innerHTML = 'Click "View My Daily Meal Logs" to load.'; // Prompt message
 
                 loadExpiryData();
                 fetchMealReviews();
-                loadMyDailyMealLogs(); // Load personal logs for admin too
             } else {
                 adminPanel.style.display = 'none';
                 memberPanel.style.display = 'block';
                 expiryDashboard.style.display = 'none'; // Member does NOT see expiry dashboard
                 mealReviews.style.display = 'block'; // Member sees general meal reviews (if any)
-                myDailyMealLogsSection.style.display = 'block'; // Member sees their personal logs
+                
+                // For member, initially hide logs section, show the button
+                myDailyMealLogsSection.style.display = 'none';
+                viewDailyMealLogsButton.style.display = 'block'; // Show the button for member
+                myDailyMealLogsContent.innerHTML = 'Click "View My Daily Meal Logs" to load.'; // Prompt message
 
                 fetchMealReviews();
-                loadMyDailyMealLogs(); // Load personal logs for member
             }
             // Initially hide the generateDailyReviewButton if type is not calorie
             generateDailyReviewButton.style.display = typeField.value === 'calorie' ? 'block' : 'none';
