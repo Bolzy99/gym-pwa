@@ -506,28 +506,41 @@
             submitButton.textContent = 'Submitting...';
             submitButton.disabled = true;
 
-            const data = {
-                name: document.getElementById('name').value,
-                phone: document.getElementById('phone').value,
-                type: typeField.value,
-                workoutType: typeField.value, // Added for consistency with your webhook input
-                calorie: calorieField.value
-            };
+            const logType = typeField.value;
+            let responseData; // Declare a variable to hold the response data
 
             try {
-                const response = await fetch('https://suitable-rapidly-terrier.ngrok-free.app/webhook-test/gym-log', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(data)
-                });
-                const resData = await response.json();
+                if (logType === 'calorie') {
+                    // Send calorie log to the AI webhook
+                    const calorieResponse = await fetch('https://suitable-rapidly-terrier.ngrok-free.app/webhook-test/calorie-log-ai', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ calorie: calorieField.value })
+                    });
+                    responseData = await calorieResponse.json();
+                    calorieField.value = ''; // Clear calorie description after submission
+                } else {
+                    // Existing attendance/other log submission logic
+                    const data = {
+                        name: document.getElementById('name').value,
+                        phone: document.getElementById('phone').value,
+                        type: logType,
+                        workoutType: logType, // Added for consistency with your webhook input
+                        calorie: calorieField.value // Although not used for attendance, keeping for consistency if webhook uses it
+                    };
+                    const response = await fetch('https://suitable-rapidly-terrier.ngrok-free.app/webhook-test/gym-log', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(data)
+                    });
+                    responseData = await response.json();
+                }
                 
                 // Display custom message based on webhook response
-                if (resData.success) {
-                    displayMessage(resData.message, true); // True for success
-                    if (typeField.value === 'calorie') calorieField.value = '';
+                if (responseData.success) {
+                    displayMessage(responseData.message, true); // True for success
                 } else {
-                    displayMessage(resData.message || "Unknown error during submission.", false); // False for error
+                    displayMessage(responseData.message || "Unknown error during submission.", false); // False for error
                 }
             } catch (err) {
                 displayMessage("Error submitting form: " + err.message, false); // False for error
@@ -705,10 +718,10 @@
 
         const quotes = [
             "The only bad workout is the one that didn’t happen. Keep pushing! 💪",
-            "Your body can stand almost anything. It’s your mind you have to convince. 🔥",
-            "Sweat is just fat crying. Let it pour!  ",
-            "Don't limit your challenges. Challenge your limits, every single day. ⛰️",
-            "Success isn't given. It's earned. On the track, on the field, in the gym. With blood, sweat, and the occasional tear. ✨"
+            "🔥 Push yourself, because no one else will do it for you!",
+            "🧠 Train your mind as hard as your body.",
+            "🕓 One hour a day keeps the excuses away!",
+            "🚀 Progress, not perfection — stay in motion!"
         ];
         function getDailyQuote() {
             const index = new Date().getDate() % quotes.length;
