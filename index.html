@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-    <title>🏋️ F3 Gym Tracker Pro ✨</title>
+    <title>Gym Tracker Pro ✨</title>
     <link rel="manifest" href="manifest.json" />
     <link rel="icon" href="/icon.png" type="image/png" />
     <link rel="apple-touch-icon" href="/icon.png" />
@@ -257,7 +257,7 @@
         }
 
 
-        #mealReviews textarea#mealReviewText, #myDailyMealLogsContent {
+        #mealReviews textarea#mealReviewText, #myDailyMealLogsContent, #mealReviewContent { /* Added #mealReviewContent here */
             width: 100%;
             min-height: 150px; /* Adjusted min-height for content areas */
             margin-top: 0.5rem;
@@ -274,7 +274,7 @@
             white-space: pre-wrap; /* To preserve newlines for AI output */
             overflow-y: auto; /* Enable scrolling if content overflows */
         }
-        #myDailyMealLogsContent {
+        #myDailyMealLogsContent, #mealReviewContent { /* Specific height adjustment for these */
             height: auto; /* Allow content to dictate height */
         }
 
@@ -388,7 +388,7 @@
     </style>
 </head>
 <body>
-    <h1>🏋️ F3 Gym Tracker Pro ✨</h1>
+    <h1>🏋️ Gym Tracker Pro</h1>
     <div id="motivational-quote">
     </div>
 
@@ -420,7 +420,7 @@
             <button type="submit">Submit Log</button>
             <div id="messageDisplay" class="message-display"></div> <!-- Message display area for general messages -->
             
-            <button type="button" id="generateDailyReviewButton" style="margin-top: 1.5rem; background: linear-gradient(145deg, #007bff, #0056b3); display: none;">Generate My Daily Review</button>
+            <!-- Generate My Daily Review button is removed as requested -->
 
         </form>
 
@@ -439,6 +439,7 @@
                 <li><button onclick="window.open('https://tally.so/r/wLyq5z', '_blank')">📋 Onboarding Form</button></li>
                 <li><button onclick="window.open('https://tally.so/r/3150WW', '_blank')">⏸️ Pause/Renew Form</button></li>
                 <li><button id="attendanceAnalyticsButton">📊 Attendance Analytics</button></li>
+                <li><button id="checkMembershipStatusButton">🔎 Check Membership Status</button></li>
             </ul>
         </div>
 
@@ -469,7 +470,7 @@
     <script>
         // Hardcoded admin users (Case-sensitive for both name and phone)
         const ADMIN_USERS = [
-            { name: "Yash Sharma", phone: "919821098933" },
+            { name: "Yash Sharma (admin)", phone: "9821098933" },
             { name: "Pankaj Dhama", phone: "919716986669" },
         ];
 
@@ -501,6 +502,9 @@
             // Replaced mealToggle change listener with button listeners
             document.getElementById('viewDailySummaryButton').addEventListener('click', () => fetchMealReviewSummary('daily'));
             document.getElementById('viewWeeklySummaryButton').addEventListener('click', () => fetchMealReviewSummary('weekly'));
+            
+            // New event listener for "Check Membership Status" button
+            document.getElementById('checkMembershipStatusButton')?.addEventListener('click', checkMembershipStatus);
 
             document.getElementById('motivational-quote').textContent = getDailyQuote();
         };
@@ -512,14 +516,14 @@
         const messageDisplay = document.getElementById('messageDisplay'); // Get the message display element
         const myDailyMealLogsContent = document.getElementById('myDailyMealLogsContent');
         const myDailyMealLogsSection = document.getElementById('myDailyMealLogsSection'); // Get the new section
-        const generateDailyReviewButton = document.getElementById('generateDailyReviewButton');
+        // generateDailyReviewButton removed as requested
         const viewDailyMealLogsButton = document.getElementById('viewDailyMealLogsButton'); // New button
 
         typeField.addEventListener('change', () => {
             const isCalorie = typeField.value === 'calorie';
             calorieField.style.display = isCalorie ? 'block' : 'none';
             calorieLabel.style.display = isCalorie ? 'block' : 'none';
-            generateDailyReviewButton.style.display = isCalorie ? 'block' : 'none'; // Show/hide generate review button
+            // generateDailyReviewButton.style.display is removed as requested
             
             // Manage visibility of the entire "My Daily Meal Logs" section and its button
             if (isCalorie) {
@@ -626,45 +630,8 @@
             }
         });
 
-        // Event listener for Generate My Daily Review button
-        generateDailyReviewButton.addEventListener('click', async () => {
-            const button = generateDailyReviewButton;
-            button.textContent = 'Generating...';
-            button.disabled = true;
+        // "Generate My Daily Review" button listener is removed as requested
 
-            const user = JSON.parse(localStorage.getItem("gymUser"));
-            if (!user) {
-                displayMessage("Please log in to generate a daily review.", false);
-                button.textContent = 'Generate My Daily Review';
-                button.disabled = false;
-                return;
-            }
-
-            try {
-                myDailyMealLogsContent.innerHTML = 'Generating daily review...'; // Show loading state
-                const response = await fetch('https://suitable-rapidly-terrier.ngrok-free.app/webhook-test/generate-personal-daily-review', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ name: user.name, phone: user.phone })
-                });
-                const data = await response.json();
-
-                if (data.success && data.message) {
-                    myDailyMealLogsContent.innerHTML = `<strong>Today's Review:</strong><br><br>${data.message}`;
-                    displayMessage("Daily review generated!", true);
-                } else {
-                    myDailyMealLogsContent.innerHTML = "Could not generate daily review. " + (data.message || "");
-                    displayMessage(data.message || "Failed to generate daily review.", false);
-                }
-            } catch (err) {
-                myDailyMealLogsContent.innerHTML = "Error generating daily review: " + err.message;
-                displayMessage("Error generating daily review: " + err.message, false);
-                console.error("Daily review generation error:", err);
-            } finally {
-                button.textContent = 'Generate My Daily Review';
-                button.disabled = false;
-            }
-        });
 
         /**
          * Loads and displays the user's daily meal logs.
@@ -723,7 +690,7 @@
                 messageDisplay.classList.remove('success');
             }
 
-            // Set a timeout to hide the message after 5 seconds
+            // Set a timeout to hide the message after 25 seconds
             messageTimeoutId = setTimeout(() => {
                 messageDisplay.classList.remove('show');
                 // Optional: clear text and classes after fade out to keep DOM clean
@@ -731,7 +698,7 @@
                     messageDisplay.textContent = '';
                     messageDisplay.className = 'message-display';
                 }, 300); // Match fade-out transition duration
-            }, 5000);
+            }, 25000); // Changed from 5000ms to 25000ms
         }
 
 
@@ -805,7 +772,7 @@
                 mealReviews.style.display = 'block'; // Admin sees general meal reviews
                 
                 // For admin, initially hide personal logs section, show the button
-                myDailyMealLogsSection.style.display = 'none';
+                myDailyMealLogsSection.style.display = 'none'; // Keep section hidden on load
                 viewDailyMealLogsButton.style.display = 'block'; // Show the button for admin
                 myDailyMealLogsContent.innerHTML = 'Click "View My Daily Meal Logs" to load.'; // Prompt message
 
@@ -818,14 +785,14 @@
                 mealReviews.style.display = 'block'; // Member sees general meal reviews (if any)
                 
                 // For member, initially hide personal logs section, show the button
-                myDailyMealLogsSection.style.display = 'none';
+                myDailyMealLogsSection.style.display = 'none'; // Keep section hidden on load
                 viewDailyMealLogsButton.style.display = 'block'; // Show the button for member
                 myDailyMealLogsContent.innerHTML = 'Click "View My Daily Meal Logs" to load.'; // Prompt message
 
                 // fetchMealReviews(); // No longer auto-load, user clicks button
             }
-            // Initially hide the generateDailyReviewButton if type is not calorie
-            generateDailyReviewButton.style.display = typeField.value === 'calorie' ? 'block' : 'none';
+            // Ensure generateDailyReviewButton is hidden on dashboard load, as it's removed from HTML
+            // This line is no longer needed: generateDailyReviewButton.style.display = typeField.value === 'calorie' ? 'block' : 'none';
         }
 
         async function loadExpiryData() {
@@ -906,6 +873,37 @@
                 console.error(`Error fetching ${period} meal review:`, err);
             }
         }
+
+        async function checkMembershipStatus() {
+            const memberName = prompt("Enter member's full name:");
+            const memberPhone = prompt("Enter member's phone number (e.g., 919876543210):");
+
+            if (!memberName || !memberPhone) {
+                displayMessage("Name and phone number are required to check status.", false);
+                return;
+            }
+
+            displayMessage("Checking membership status...", true);
+
+            try {
+                const response = await fetch('https://suitable-rapidly-terrier.ngrok-free.app/webhook-test/check-membership-status', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ name: memberName, phone: memberPhone })
+                });
+                const data = await response.json();
+
+                if (data.success) {
+                    displayMessage(`Status for ${memberName}: ${data.status || 'N/A'}. End Date: ${data.endDate || 'N/A'}`, true);
+                } else {
+                    displayMessage(data.message || "Failed to check status. Member not found or an error occurred.", false);
+                }
+            } catch (err) {
+                displayMessage("Error checking status: " + err.message, false);
+                console.error("Error checking membership status:", err);
+            }
+        }
+
 
         const quotes = [
             "The only bad workout is the one that didn’t happen. Keep pushing! 💪",
