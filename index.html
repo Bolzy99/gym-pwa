@@ -699,7 +699,7 @@
                         phone: user.phone,
                         calorie: calorieField.value
                     };
-                    const calorieResponse = await fetch('https://suitable-rapidly-terrier.ngrok-free.app/webhook-test/calorie-log-process', {
+                    const calorieResponse = await fetch('https://suitable-rapidly-terrier.ngrok-free.app/webhook/calorie-log-process', {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify(calorieLogData)
@@ -733,7 +733,7 @@
                         workoutType: logType,
                         calorie: calorieField.value 
                     };
-                    const response = await fetch('https://suitable-rapidly-terrier.ngrok-free.app/webhook-test/gym-log', {
+                    const response = await fetch('https://suitable-rapidly-terrier.ngrok-free.app/webhook/gym-log', {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify(data)
@@ -772,7 +772,7 @@
             myDailyMealLogsContent.innerHTML = 'Loading your daily meal logs...'; // Show loading state when button is clicked
 
             try {
-                const response = await fetch('https://suitable-rapidly-terrier.ngrok-free.app/webhook-test/get-my-daily-calorie-logs', {
+                const response = await fetch('https://suitable-rapidly-terrier.ngrok-free.app/webhook/get-my-daily-calorie-logs', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ name: user.name, phone: user.phone })
@@ -861,7 +861,7 @@
             }
 
             try {
-                const response = await fetch('https://suitable-rapidly-terrier.ngrok-free.app/webhook-test/check-member', {
+                const response = await fetch('https://suitable-rapidly-terrier.ngrok-free.app/webhook/check-member', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ name, phone })
@@ -931,7 +931,7 @@
             expiryListDiv.innerHTML = '<p>Loading expiry data...</p>';
 
             try {
-                const response = await fetch('https://suitable-rapidly-terrier.ngrok-free.app/webhook-test/get-expiry-data', {
+                const response = await fetch('https://suitable-rapidly-terrier.ngrok-free.app/webhook/get-expiry-data', {
                     method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({})
                 });
                 const data = await response.json();
@@ -972,8 +972,8 @@
             displayMessage(`Generating ${period} meal review...`, true); // Provide immediate feedback
 
             const endpointMap = {
-                daily: 'https://suitable-rapidly-terrier.ngrok-free.app/webhook-test/get-daily-meal-reviews', // Your n8n workflow for daily summary
-                weekly: 'https://suitable-rapidly-terrier.ngrok-free.app/webhook-test/get-weekly-meal-reviews' // Placeholder for weekly summary
+                daily: 'https://suitable-rapidly-terrier.ngrok-free.app/webhook/get-daily-meal-reviews', // Your n8n workflow for daily summary
+                weekly: 'https://suitable-rapidly-terrier.ngrok-free.app/webhook/get-weekly-meal-reviews' // Placeholder for weekly summary
             };
 
             const endpoint = endpointMap[period];
@@ -1051,7 +1051,7 @@
             showModalResultState(); // Switch to result view immediately
 
             try {
-                const response = await fetch('https://suitable-rapidly-terrier.ngrok-free.app/webhook-test/check-membership-status', {
+                const response = await fetch('https://suitable-rapidly-terrier.ngrok-free.app/webhook/check-membership-status', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ name: memberName, phone: memberPhone })
